@@ -4,7 +4,7 @@ CREATE TABLE users (
     password TEXT,
     auth_level INTEGER
 );
-CREATE TABLE choices (
+CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
     poster_id INTEGER REFERENCES users,
     message TEXT,

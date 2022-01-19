@@ -1,7 +1,7 @@
 <title>Foorumi</title>
-<h1>Kirjaudu sisään</h1>
+<h1>Luo tili</h1>
 
-<form action="/login" method="POST">
+<form action="/signup" method="POST">
     Käyttäjänimi:
     <br>
     <input type="text" name="username">
@@ -10,17 +10,14 @@
     <br>
     <input type="password" name="password">
     <br>
-    <input type="submit" value="Kirjaudu sisään">
+    Syötä salasana uudelleen:
+    <br>
+    <input type="password" name="password_check">
+    <br>
+    <input type="submit" value="Luo tili">
 </form>
-
-<br>
 
 {% for message in messages %}
     <p style="color:red;"> {{ message }} </p>
     <br>
 {% endfor %}
-
-<br>
-<br>
-
-Eikö sinulla ole vielä tiliä? <a href="/signup">Luo uusi tili</a>
