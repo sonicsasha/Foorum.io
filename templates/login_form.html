@@ -1,26 +1,34 @@
-<title>Foorumi</title>
-<h1>Kirjaudu sisään</h1>
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/login.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
+<title>Foorum.io</title>
+
+{% extends "signin_layout.html" %}
+{% block content %}
 <form action="/login" method="POST">
-    Käyttäjänimi:
+    <h2>Kirjaudu sisään</h2>
+    <label for="username">Käyttäjänimi:</label>
+    <br>
     <br>
     <input type="text" name="username">
     <br>
-    Salasana:
+    <br>
+    <label for="password">Salasana:</label>
+    <br>
     <br>
     <input type="password" name="password">
     <br>
-    <input type="submit" value="Kirjaudu sisään">
-</form>
-
-<br>
-
-{% for message in messages %}
-    <p style="color:red;"> {{ message }} </p>
     <br>
-{% endfor %}
+    <input type="submit" value="Kirjaudu sisään">
+    <br>
 
-<br>
-<br>
+    {% for message in messages %}
+        <p style="color:red;"> {{ message }} </p>
+        <br>
+    {% endfor %}
 
-Eikö sinulla ole vielä tiliä? <a href="/signup">Luo uusi tili</a>
+    <br>
+    <p>Eikö sinulla ole vielä tiliä? <a href="/signup">Luo uusi tili</a></p>
+</form>
+{% endblock %}

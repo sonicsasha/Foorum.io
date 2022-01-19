@@ -1,23 +1,44 @@
-<title>Foorumi</title>
-<h1>Luo tili</h1>
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/login.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<form action="/signup" method="POST">
-    Käyttäjänimi:
-    <br>
-    <input type="text" name="username">
-    <br>
-    Salasana:
-    <br>
-    <input type="password" name="password">
-    <br>
-    Syötä salasana uudelleen:
-    <br>
-    <input type="password" name="password_check">
-    <br>
-    <input type="submit" value="Luo tili">
-</form>
+<title>Foorum.io</title>
 
-{% for message in messages %}
-    <p style="color:red;"> {{ message }} </p>
-    <br>
-{% endfor %}
+{% extends "signin_layout.html" %}
+{% block content %}
+    <form action="/signup" method="POST">
+
+        <h2>Luo uusi tili</h2>
+        Käyttäjänimi:
+        <br>
+        <br>
+        <input type="text" name="username">
+        <br>
+        <br>
+        Salasana:
+        <br>
+        <br>
+        <input type="password" name="password">
+        <br>
+        <br>
+        Syötä salasana uudelleen:
+        <br>
+        <br>
+        <input type="password" name="password_check">
+        <br>
+        {% for message in messages %}
+        <p style="color:red;"> {{ message }} </p>
+        {% endfor %}
+        <br>
+        <input type="submit" value="Luo tili">
+        <br>
+        <br>
+        
+
+
+        <p>Onko sinulla jo tili? <a href="/login">Kirjaudu sisään</a></p>
+
+    </form>
+
+    
+{% endblock %}
