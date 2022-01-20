@@ -32,6 +32,30 @@
     color: hsl(0, 0%, 83%)
 }
 
+.topic {
+    font-size: 1.5e;
+    margin-left: 20vw;
+    margin-right: 20vw;
+    margin-top: 50px;
+    width: 60vw;
+    height: auto;
+    background-color: #caeaf8;
+    border-radius: 20px;
+    padding-top: 25px;
+    padding-bottom: 50px;
+    padding-left: 30px;
+    border-color: #267da5;
+    border-width: 5px;
+    border-style: solid;
+
+}
+
+.topic :hover {
+    background-color: #8aa0aa;
+}
+
+
+
 button {
     vertical-align: top;
     height: 50px;
@@ -43,4 +67,5 @@ button {
 
 body {
     margin: 0;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }

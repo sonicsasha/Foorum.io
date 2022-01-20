@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+
+<div class="topic" style="cursor: pointer;" onclick="window.location='/topic';">
+    <h1><a>Topic</a></h1></li>
+    <h3><a>What the topic is about</a></h3>
+    <a>Total threads: TODO</a>
+    <br>
+    <a>Latest reply: TODO</a>
+</div>
+
+
+
+{% endblock %}
