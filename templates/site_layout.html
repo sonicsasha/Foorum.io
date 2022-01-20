@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<div class="header">
+    <ul>
+        <li><a style="font-size: 40px;" href="/"><strong>Foorum.io</strong></a></li>
+        <li style="float: right;"><a href="/signout">Kirjaudu ulos</a></li>
+        <li style="float: right;" ><a href="/search">Haku</a></li>
+
+
+    </ul>
+</div>
+
+{% block content %}{% endblock %}

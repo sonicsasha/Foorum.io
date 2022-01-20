@@ -33,7 +33,7 @@ def mainpage():
 
     print(username)
 
-    return f"Tervetuloa, {username}"
+    return render_template("site_layout.html")
 
 
 @app.route("/login", methods=["GET"])
