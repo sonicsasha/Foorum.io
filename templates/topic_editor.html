@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+
+<form action="/topic/new" method="post">
+    <h2>Luo uusi aihe</h2>
+    <br>
+    Aihe:
+    <br>
+    <input type="text" name="name" value={{topic_name}}>
+    <br>
+    Aiheen kuvaus:
+    <br>
+    <input type="text" name="desc" value={{topic_desc}}>
+    <br>
+    Yksityisyysasetukset:
+    <br>
+    <input type="radio" name="privacy" value="public" checked> Julkinen
+    <input type="radio" name="privacy" value="private"> Yksityinen
+    <br>
+    Jos aihe on yksityinen, niin määrittele, kenellä on pääsy aiheeseen. Kirjoita jokainen käyttäjänimi pilkulla erotettuna:
+    <br>
+    <input type="text" name="access">
+    <br>
+    {% for message in messages %}
+    <a style="color: red;">{{message}}</a>
+    {% endfor %}
+    <input type="submit" value="Luo aihe" class="newButton">
+</form>
+
+{% endblock %}

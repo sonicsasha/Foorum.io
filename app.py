@@ -23,18 +23,66 @@ def notLoggedIn():
     except:
         return True
 
+def getAuthLevel():
+    return db.session.execute("SELECT auth_level FROM users WHERE username=:username", {"username": session["username"]}).fetchone()[0]
+
 
 @app.route("/")
 def mainpage():
     if notLoggedIn():
         return redirect("/login")
 
-    username=session["username"]
 
-    print(username)
+    sql= "SELECT id, topic_name, topic_desc, is_hidden FROM topics"
+    topics=db.session.execute(sql).fetchall()
+    print(topics)
+    auth_level=db.session.execute("SELECT auth_level FROM users WHERE username=:username", {"username": session["username"]} ).fetchone()
 
-    return render_template("topics.html")
 
+
+    return render_template("topics.html", topics=topics, auth_level=auth_level[0])
+
+
+@app.route("/topic/new", methods=["GET"])
+def newTopic_form():
+    try:
+        if getAuthLevel()<=1:
+            return ("You don't have the necessary permissions to perform this task.")
+        
+        return render_template("topic_editor.html")
+
+    except:
+        return redirect("/")
+
+@app.route("/topic/new", methods=["POST"])
+def create_new_topic():
+    topic_name=request.form["name"]
+    topic_desc=request.form["desc"]
+    access=request.form["access"]
+
+    messages=[]
+    
+    if request.form["privacy"]=="public":
+        hidden=False
+    else:
+        hidden=True
+    
+    if topic_name=="":
+        messages.append("Ole hyvä, ja syötä aihe!")
+    if len(topic_name)>50:
+        messages.append("Aiheen nimi on liian pitkä! (max. 50 merkkiä)")
+    if topic_desc=="":
+        messages.append("Ole hyvä, ja anna aiheelle kuvaus!")
+    if len(topic_desc)>100:
+        messages.append("Aiheen kuvaus on liian pitkä! (max. 100 merkkiä)")
+    
+    if len(messages)>0:
+        return render_template("topic_editor.html", messages=messages, topic_name=topic_name, topic_desc=topic_desc, access=access)
+    
+    sql="INSERT INTO topics (topic_name, topic_desc, is_hidden) VALUES (:name, :desc, :hidden);"
+    db.session.execute(sql, {"name":topic_name, "desc":topic_desc, "hidden":hidden})
+    db.session.commit()
+    return redirect("/")
 
 @app.route("/login", methods=["GET"])
 def login_form():

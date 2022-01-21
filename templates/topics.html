@@ -8,14 +8,19 @@
 
 {% block content %}
 
-<div class="topic" style="cursor: pointer;" onclick="window.location='/topic';">
-    <h1><a>Topic</a></h1></li>
-    <h3><a>What the topic is about</a></h3>
+{% for topic in topics %}
+
+<div class="topic" style="cursor: pointer;" onclick="window.location='/topic/{{ topic.id }}';">
+    <h1><a>{{ topic.topic_name }}</a></h1></li>
+    <h3><a>{{ topic.topic_desc}}</a></h3>
     <a>Total threads: TODO</a>
     <br>
     <a>Latest reply: TODO</a>
 </div>
+{% endfor %}
 
-
+{% if auth_level>=2 %}
+<button type="button" onclick="window.location='/topic/new'" class="newButton"> Luo uusi aihe </button>
+{% endif %}
 
 {% endblock %}

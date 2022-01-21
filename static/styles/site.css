@@ -56,14 +56,59 @@
 
 
 
-button {
-    vertical-align: top;
-    height: 50px;
-    width: 50px;
-    margin-right: 5vw;
-    margin-top: 0%;
-    float: left;
+.newButton {
+    width: 30vw;
+    height: 5vw;
+    text-align: center;
+    margin-top: 50px;
+    margin-left: 35vw;
+    margin-right: 35vw;
+    background-color: #80bedb;
+    font-size: 1.3em;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    border-style: hidden;
 }
+
+.newButton:hover {
+    background-color: #5c899e;
+}
+
+form {
+    align-items: center;
+    text-align: center;
+    font-size: 25px;
+}
+
+
+
+input[type="text"]{
+    height: 5vh;
+    width: 40vw;
+    font-size: 1em;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+input[type="submit"]{
+    width: 15vw;
+    height: 8vh;
+    background-color: #3bc1ff;
+    color: white;
+    border-radius: 10px;
+    font-size: 1.1em;
+}
+
+input[type="radio"]{
+    border: 0px;
+    height: 30px;
+    width: 30px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    vertical-align: middle;
+}
+
 
 body {
     margin: 0;
