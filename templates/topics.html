@@ -13,6 +13,9 @@
 <div class="topic" style="cursor: pointer;" onclick="window.location='/topic/{{ topic.id }}';">
     <h1><a>{{ topic.topic_name }}</a></h1></li>
     <h3><a>{{ topic.topic_desc}}</a></h3>
+    {% if topic.is_hidden %}
+    <h3><a style="color: red">YKSITYINEN</h3>
+    {% endif %}
     <a>Total threads: TODO</a>
     <br>
     <a>Latest reply: TODO</a>

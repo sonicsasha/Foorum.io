@@ -13,11 +13,11 @@
     <br>
     Aihe:
     <br>
-    <input type="text" name="name" value={{topic_name}}>
+    <input type="text" name="name" value="{{topic_name}}">
     <br>
     Aiheen kuvaus:
     <br>
-    <input type="text" name="desc" value={{topic_desc}}>
+    <input type="text" name="desc" value="{{topic_desc}}">
     <br>
     Yksityisyysasetukset:
     <br>
@@ -26,9 +26,10 @@
     <br>
     Jos aihe on yksityinen, niin määrittele, kenellä on pääsy aiheeseen. Kirjoita jokainen käyttäjänimi pilkulla erotettuna:
     <br>
-    <input type="text" name="access">
+    <input type="text" name="access" value="{{access}}">
     <br>
     {% for message in messages %}
+    <br>
     <a style="color: red;">{{message}}</a>
     {% endfor %}
     <input type="submit" value="Luo aihe" class="newButton">

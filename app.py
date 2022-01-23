@@ -1,6 +1,4 @@
 from crypt import methods
-from email import message
-from pyexpat.errors import messages
 from queue import Empty
 import re
 from urllib import request
@@ -32,11 +30,17 @@ def mainpage():
     if notLoggedIn():
         return redirect("/login")
 
-
-    sql= "SELECT id, topic_name, topic_desc, is_hidden FROM topics"
-    topics=db.session.execute(sql).fetchall()
-    print(topics)
+    user_id=db.session.execute("SELECT id FROM users WHERE username=:username", {"username":session["username"]}).fetchone()[0]
     auth_level=db.session.execute("SELECT auth_level FROM users WHERE username=:username", {"username": session["username"]} ).fetchone()
+
+    if auth_level[0]>=1: #Moderators and admins can see all topics
+        sql="SELECT T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T;"
+    else:
+        sql="SELECT T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T LEFT JOIN topicsAccess TA ON TA.topic_id=T.id  WHERE T.is_hidden=False OR TA.user_id=:user_id;"
+    
+    topics=db.session.execute(sql, {"user_id":user_id}).fetchall()
+    print(topics)
+
 
 
 
@@ -75,13 +79,34 @@ def create_new_topic():
         messages.append("Ole hyvä, ja anna aiheelle kuvaus!")
     if len(topic_desc)>100:
         messages.append("Aiheen kuvaus on liian pitkä! (max. 100 merkkiä)")
+    if db.session.execute("SELECT id FROM topics WHERE topic_name=:name", {"name":topic_name}).fetchone():
+        messages.append("Ole hyvä, ja valitse aiheelle jokin muu nimi!")
+
+    access_names=request.form["access"].replace(" ","").split(",") #Check if every user who is supposed to see the topic actually exists.
+    if access_names[0]!='':
+        for name in access_names:
+            id=db.session.execute("SELECT id FROM users WHERE username=:name", {"name":name}).fetchone()
+            if not id:
+                messages.append(f"Käyttäjää {name} ei löytynyt!")
     
     if len(messages)>0:
+        print(topic_name)
         return render_template("topic_editor.html", messages=messages, topic_name=topic_name, topic_desc=topic_desc, access=access)
+    
+
     
     sql="INSERT INTO topics (topic_name, topic_desc, is_hidden) VALUES (:name, :desc, :hidden);"
     db.session.execute(sql, {"name":topic_name, "desc":topic_desc, "hidden":hidden})
     db.session.commit()
+
+    topic_id=db.session.execute("SELECT id FROM topics WHERE topic_name=:name", {"name":request.form["name"]}).fetchone()[0]
+
+    if access_names!=['']:
+        for name in access_names:
+            id=db.session.execute("SELECT id FROM users WHERE username=:name", {"name":name}).fetchone()[0]
+            db.session.execute("INSERT INTO topicsAccess (user_id, topic_id) VALUES (:user_id, :topic_id)", {"user_id":id, "topic_id":topic_id})
+            db.session.commit()
+
     return redirect("/")
 
 @app.route("/login", methods=["GET"])
