@@ -1,3 +1,4 @@
+from crypt import methods
 from pyexpat.errors import messages
 from urllib import request
 from flask import Flask
@@ -90,7 +91,7 @@ def threads(id):
         if not has_access: #If the topic is private, then check that the user has access to the topic.
             return ("Sinulla ei ole pääsyä tähän aiheeseen. Mene pois! >:(")
     
-    sql="SELECT U.username, T.thread_header, T.thread_desc, T.sent_at, T.edited_at FROM threads T LEFT JOIN users U ON U.id=T.poster_id WHERE T.topic_id=:topic_id"
+    sql="SELECT U.username, U.auth_level, T.thread_header, T.thread_desc, T.sent_at, T.edited_at FROM threads T LEFT JOIN users U ON U.id=T.poster_id WHERE T.topic_id=:topic_id ORDER BY T.sent_at DESC"
     threads=db.session.execute(sql, {"topic_id":id})
     return render_template("threads.html", threads=threads, auth_level=getAuthLevel(), topic_id=id)
 
@@ -171,6 +172,46 @@ def editTopicSubmit(id):
             db.session.commit()
     
     return redirect("/")
+
+@app.route("/topic/<int:id>/new", methods=["GET"])
+def newThreadForm(id):
+    if notLoggedIn():
+        return redirect("/")
+    
+    topic_name=db.session.execute("SELECT topic_name FROM topics WHERE id=:id", {"id":id}).fetchone()[0]
+    
+    return render_template("thread_editor.html",
+        title=f"Luo uusi viestiketju aiheeseen {topic_name}",
+        submit="Luo viestiketju",
+        action=f"/topic/{id}/new")
+
+@app.route("/topic/<int:id>/new", methods=["POST"])
+def newThreadSubmit(id):
+    if notLoggedIn():
+        return redirect("/")
+    
+    messages=[]
+
+    topic_name=db.session.execute("SELECT topic_name FROM topics WHERE id=:id", {"id":id}).fetchone()[0]
+    thread_name=request.form["name"]
+    thread_desc=request.form["desc"]
+
+    if len(thread_name)==0:
+        messages.append("Ole hyvä, ja anna viestiketjulle otsikko!")
+    
+    if len(messages)>0:
+        return render_template("thread_editor.html",
+        title=f"Luo uusi viestiketju aiheeseen {topic_name}",
+        submit="Luo viestiketju",
+        action=f"/topic/{id}/new",
+        thread_name=thread_name,
+        thread_desc=thread_desc)
+    
+    sql="INSERT INTO threads (poster_id, topic_id, thread_header, thread_desc, sent_at) VALUES (:user_id, :topic_id, :thread_name, :thread_desc, NOW())"
+    db.session.execute(sql, {"user_id":getUserId(), "topic_id":id, "thread_name":thread_name, "thread_desc":thread_desc})
+    db.session.commit()
+
+    return redirect(f"/topic/{id}")
     
 
 

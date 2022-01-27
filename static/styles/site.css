@@ -1,3 +1,7 @@
+:root {
+    --thread-color: #6d8bc2
+}
+
 .header ul {
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     list-style-type: none;
@@ -72,6 +76,10 @@
     padding-bottom: 15px;
 }
 
+.thread :hover{
+    background-color: #53688f;
+}
+
 
 .newButton {
     width: 30vw;
@@ -91,12 +99,36 @@
     background-color: #5c899e;
 }
 
+.newThreadButton {
+    width: 30vw;
+    height: 5vw;
+    text-align: center;
+    margin-top: 50px;
+    margin-left: 35vw;
+    margin-right: 35vw;
+    background-color: #80bedb;
+    font-size: 1.3em;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    border-style: hidden;
+}
+
+.newThreadButton {
+    background-color: #53688f
+}
+
 form {
     align-items: center;
     text-align: center;
     font-size: 25px;
 }
 
+textarea {
+    resize: none;
+    border-radius: 5px;
+    margin-top: 25px;
+    font-size: 1em;
+}
 
 
 input[type="text"]{
@@ -131,3 +163,4 @@ body {
     margin: 0;
     font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
+

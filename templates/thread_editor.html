@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+
+<form action="{{action}}" method="post">
+    <h2>{{title}}</h2>
+    <br>
+    Viestiketjun otsikko:
+    <br>
+    <input type="text" name="name" value="{{thread_name}}">
+    <br>
+    Viestiketjun kuvaus:
+    <br>
+    <textarea rows="10" cols="80" name="desc">{{thread_desc}}</textarea>
+    <br>
+    {% for message in messages %}
+    <br>
+    <a style="color: red;">{{message}}</a>
+    {% endfor %}
+    <input type="submit" value="{{submit}}" class="newButton" style="background-color: #6d8bc2;">
+</form>
+
+{% endblock %}

@@ -12,13 +12,27 @@
 <div class="thread" style="cursor: pointer;" onclick="window.location='/thread';">
     <h1><a>{{thread.thread_header}}</a></h1></li>
     <h3><a>{{thread.thread_desc}}</a></h3>
-    <a>Viestiketjun aloittaja: {{thread.username}}</a>
+    Viestiketjun aloittaja: 
+
+    {% if thread.auth_level == 2 %}
+    <a style=color:orange;>{{thread.username}}</a>
+    {% endif %}
+
+    {% if thread.auth_level == 1 %}
+    <a style=color:yellow;>{{thread.username}}</a>
+    {% endif %}
+
+    {% if thread.auth_level == 0 %}
+    <a>{{thread.username}}</a>
+    {% endif %}
     <br>
     <a>Aloitettu: {{thread.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
     <br>
     <a>Viimeisin vastaus: TODO</a>
 </div>
 {% endfor %}
+
+<button type="button" onclick="window.location='/topic/{{topic_id}}/new'" class="newButton", style="background-color: #6d8bc2;"> Luo uusi viestiketju </button>
 
 {% if auth_level >= 2 %}
 
