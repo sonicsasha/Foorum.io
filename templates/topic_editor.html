@@ -8,7 +8,7 @@
 
 {% block content %}
 
-<form action="/topic/new" method="post">
+<form action="{{action}}" method="post">
     <h2>{{title}}</h2>
     <br>
     Aihe:
@@ -21,8 +21,13 @@
     <br>
     Yksityisyysasetukset:
     <br>
+    {% if is_hidden %}
+    <input type="radio" name="privacy" value="public"> Julkinen
+    <input type="radio" name="privacy" value="private" checked> Yksityinen
+    {% else %}
     <input type="radio" name="privacy" value="public" checked> Julkinen
     <input type="radio" name="privacy" value="private"> Yksityinen
+    {% endif %}
     <br>
     Jos aihe on yksityinen, niin määrittele, kenellä on pääsy aiheeseen. Kirjoita jokainen käyttäjänimi pilkulla erotettuna:
     <br>

@@ -1,3 +1,4 @@
+from pyexpat.errors import messages
 from urllib import request
 from flask import Flask
 from flask import render_template, request, session, redirect
@@ -24,6 +25,35 @@ def getAuthLevel():
 def getUserId():
     return db.session.execute("SELECT id FROM users WHERE username=:username", {"username":session["username"]}).fetchone()[0]
 
+def parseTopicForm(has_name_changed):
+    topic_name=request.form["name"]
+    topic_desc=request.form["desc"]
+    access=request.form["access"]
+
+    messages=[]
+
+    
+    if topic_name=="":
+        messages.append("Ole hyvä, ja syötä aihe!")
+    if len(topic_name)>50:
+        messages.append("Aiheen nimi on liian pitkä! (max. 50 merkkiä)")
+    if topic_desc=="":
+        messages.append("Ole hyvä, ja anna aiheelle kuvaus!")
+    if len(topic_desc)>100:
+        messages.append("Aiheen kuvaus on liian pitkä! (max. 100 merkkiä)")
+    if has_name_changed:
+        if db.session.execute("SELECT id FROM topics WHERE topic_name=:name", {"name":topic_name}).fetchone():
+            messages.append("Ole hyvä, ja valitse aiheelle jokin muu nimi!")
+
+    access_names=access.replace(" ","").split(",") #Check if every user who is supposed to see the topic actually exists.
+    if access_names[0]!='':
+        for name in access_names:
+            id=db.session.execute("SELECT id FROM users WHERE username=:name", {"name":name}).fetchone()
+            if not id:
+                messages.append(f"Käyttäjää {name} ei löytynyt!")
+    
+    return messages
+
 
 @app.route("/")
 def mainpage():
@@ -34,9 +64,9 @@ def mainpage():
     auth_level = getAuthLevel()
 
     if auth_level>=1: #Moderators and admins can see all topics
-        sql="SELECT T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T;"
+        sql="SELECT T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T ORDER BY T.id;"
     else:
-        sql="SELECT T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T LEFT JOIN topicsAccess TA ON TA.topic_id=T.id  WHERE T.is_hidden=False OR TA.user_id=:user_id;"
+        sql="SELECT T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T LEFT JOIN topicsAccess TA ON TA.topic_id=T.id  WHERE T.is_hidden=False OR TA.user_id=:user_id ORDER BY T.id;"
     
     topics=db.session.execute(sql, {"user_id":user_id}).fetchall()
     print(topics)
@@ -55,7 +85,7 @@ def threads(id):
     if not is_hidden: #Check if the topic even exists.
         return("Aihetta ei löytynyt. Yritä uudelleen!")
     
-    if is_hidden[0]==True:
+    if is_hidden[0]==True and getAuthLevel==0:
         has_access=db.session.execute("SELECT topic_id FROM topicsAccess WHERE topic_id=:id AND user_id=:user_id", {"id":id, "user_id":getUserId()}).fetchone()
         if not has_access: #If the topic is private, then check that the user has access to the topic.
             return ("Sinulla ei ole pääsyä tähän aiheeseen. Mene pois! >:(")
@@ -77,7 +107,7 @@ def editTopicForm(id):
     topic=db.session.execute(sql, {"id":id}).fetchone()
 
     access=""
-    sql="SELECT U.username FROM users U LEFT JOIN topicsAccess TA ON TA.topic_id=:id AND U.id=TA.user_id"
+    sql="SELECT U.username FROM users U LEFT JOIN topicsAccess TA ON U.id=TA.user_id WHERE TA.topic_id=:id"
     for user in db.session.execute(sql, {"id":id}).fetchall(): #Get the usernames that have access to the topic.
         access+=f"{user[0]}, "
 
@@ -85,9 +115,64 @@ def editTopicForm(id):
         "topic_editor.html",
         title="Muokkaa aihetta",
         submit="Tallenna muutokset",
-        action=f"/topic/{int}/edit",
-        topic=topic,
-        access=access)
+        action=f"/topic/{id}/edit",
+        topic_name=topic["topic_name"],
+        topic_desc=topic["topic_desc"],
+        is_hidden=topic["is_hidden"],
+        access=access[:-2],
+    )
+
+@app.route("/topic/<int:id>/edit", methods=["POST"])
+def editTopicSubmit(id):
+    if notLoggedIn():
+        return redirect("/")
+    elif getAuthLevel()<2:
+        return ("You don't have the rights to perform this task!")
+
+    sql="SELECT topic_name FROM topics WHERE id=:id"
+    topic=db.session.execute(sql, {"id":id}).fetchone()
+    
+    topic_name=request.form["name"]
+    topic_desc=request.form["desc"]
+    access=request.form["access"]
+
+    messages=parseTopicForm(topic["topic_name"]!=topic_name)
+
+
+
+    if request.form["privacy"]=="public":
+        hidden=False
+    else:
+        hidden=True
+
+    if len(messages)>0:
+        return render_template("topic_editor.html",
+        action=f"/topic/{id}/edit",
+        messages=messages,
+        topic_name=topic_name,
+        topic_desc=topic_desc,
+        access=access,
+        is_hidden=hidden,
+        title="Muokkaa aihetta",
+        submit="Tallenna muutokset")
+    
+    sql="UPDATE topics SET topic_name=:topic_name, topic_desc=:topic_desc, is_hidden=:hidden WHERE id=:id"
+    db.session.execute(sql, {"topic_name":topic_name, "topic_desc":topic_desc, "hidden":hidden, "id":id})
+
+    db.session.execute("DELETE FROM topicsAccess WHERE topic_id=:id", {"id":id})
+    db.session.commit()
+
+    access_names=access.replace(" ","").split(",")
+
+    if access_names!=['']:
+        for name in access_names:
+            user_id=db.session.execute("SELECT id FROM users WHERE username=:name", {"name":name}).fetchone()[0]
+            db.session.execute("INSERT INTO topicsAccess (user_id, topic_id) VALUES (:user_id, :topic_id)", {"user_id":user_id, "topic_id":id})
+            db.session.commit()
+    
+    return redirect("/")
+    
+
 
 
 
@@ -97,52 +182,40 @@ def newTopic_form():
     if notLoggedIn():
         return redirect("/")
 
-    try:
-        if getAuthLevel()<=1:
-            return ("You don't have the necessary permissions to perform this task.")
-        
-        return render_template("topic_editor.html", title="Luo uusi aihe", submit="Luo aihe", action="/topic/new")
 
-    except:
-        return redirect("/")
+    if getAuthLevel()<=1:
+        return ("You don't have the necessary permissions to perform this task.")
+    
+    return render_template("topic_editor.html", title="Luo uusi aihe", submit="Luo aihe", action="/topic/new")
+
+
 
 @app.route("/topic/new", methods=["POST"])
 def create_new_topic():
     if notLoggedIn():
         return redirect("/")
 
-    topic_name=request.form["name"]
-    topic_desc=request.form["desc"]
-    access=request.form["access"]
-
-    messages=[]
-    
     if request.form["privacy"]=="public":
         hidden=False
     else:
         hidden=True
-    
-    if topic_name=="":
-        messages.append("Ole hyvä, ja syötä aihe!")
-    if len(topic_name)>50:
-        messages.append("Aiheen nimi on liian pitkä! (max. 50 merkkiä)")
-    if topic_desc=="":
-        messages.append("Ole hyvä, ja anna aiheelle kuvaus!")
-    if len(topic_desc)>100:
-        messages.append("Aiheen kuvaus on liian pitkä! (max. 100 merkkiä)")
-    if db.session.execute("SELECT id FROM topics WHERE topic_name=:name", {"name":topic_name}).fetchone():
-        messages.append("Ole hyvä, ja valitse aiheelle jokin muu nimi!")
 
-    access_names=request.form["access"].replace(" ","").split(",") #Check if every user who is supposed to see the topic actually exists.
-    if access_names[0]!='':
-        for name in access_names:
-            id=db.session.execute("SELECT id FROM users WHERE username=:name", {"name":name}).fetchone()
-            if not id:
-                messages.append(f"Käyttäjää {name} ei löytynyt!")
-    
+    messages=parseTopicForm(True)
+
+    topic_name=request.form["name"]
+    topic_desc=request.form["desc"]
+    access=request.form["access"]
+
     if len(messages)>0:
-        print(topic_name)
-        return render_template("topic_editor.html", messages=messages, topic_name=topic_name, topic_desc=topic_desc, access=access)
+        return render_template("topic_editor.html",
+        title="Luo uusi aihe",
+        submit="Luo aihe",
+        messages=messages,
+        topic_name=topic_name,
+        topic_desc=topic_desc,
+        access=access,
+        is_hidden=hidden,
+        action="/topic/new")
     
 
     
@@ -151,6 +224,8 @@ def create_new_topic():
     db.session.commit()
 
     topic_id=db.session.execute("SELECT id FROM topics WHERE topic_name=:name", {"name":request.form["name"]}).fetchone()[0]
+
+    access_names=access.replace(" ","").split(",")
 
     if access_names!=['']:
         for name in access_names:
