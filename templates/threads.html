@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+
+{% for thread in threads %}
+<div class="thread" style="cursor: pointer;" onclick="window.location='/thread';">
+    <h1><a>{{thread.thread_header}}</a></h1></li>
+    <h3><a>{{thread.thread_desc}}</a></h3>
+    <a>Viestiketjun aloittaja: {{thread.username}}</a>
+    <br>
+    <a>Aloitettu: {{thread.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
+    <br>
+    <a>Viimeisin vastaus: TODO</a>
+</div>
+{% endfor %}
+
+{% if auth_level >= 2 %}
+
+<button type="button" onclick="window.location='/topic/{{topic_id}}/edit'" class="newButton"> Muokkaa aihetta </button>
+
+{% endif %}
+
+{% endblock %}

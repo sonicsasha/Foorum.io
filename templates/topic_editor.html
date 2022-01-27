@@ -9,7 +9,7 @@
 {% block content %}
 
 <form action="/topic/new" method="post">
-    <h2>Luo uusi aihe</h2>
+    <h2>{{title}}</h2>
     <br>
     Aihe:
     <br>
@@ -32,7 +32,7 @@
     <br>
     <a style="color: red;">{{message}}</a>
     {% endfor %}
-    <input type="submit" value="Luo aihe" class="newButton">
+    <input type="submit" value="{{submit}}" class="newButton">
 </form>
 
 {% endblock %}

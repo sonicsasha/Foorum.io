@@ -55,6 +55,22 @@
     background-color: #8aa0aa;
 }
 
+.thread {
+    margin-left: 5vw;
+    margin-right: 5vw;
+    height: auto;
+    width: auto;
+    margin-top:  50px;
+    margin-bottom: 50px;
+    background-color: #ffae61;
+    border-radius: 3px;
+    border-style: solid;
+    border-width: 2px;
+    font-size: 0.8em;
+    padding-left: 5px;
+    padding-top: 1px;
+    padding-bottom: 15px;
+}
 
 
 .newButton {

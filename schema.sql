@@ -13,6 +13,16 @@ CREATE TABLE messages (
     edited_at TIMESTAMP
 );
 
+CREATE TABLE threads (
+    id SERIAL PRIMARY KEY,
+    poster_id INTEGER REFERENCES users,
+    topic_id INTEGER REFERENCES topics,
+    thread_header TEXT,
+    thread_desc TEXT,
+    sent_at TIMESTAMP,
+    edited_at TIMESTAMP
+);
+
 CREATE TABLE topics (
     id SERIAL PRIMARY KEY,
     topic_name TEXT UNIQUE,

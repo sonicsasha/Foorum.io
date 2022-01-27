@@ -1,11 +1,8 @@
-from crypt import methods
-from queue import Empty
-import re
 from urllib import request
 from flask import Flask
 from flask import render_template, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
-from os import getenv
+from os import access, getenv
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
@@ -24,16 +21,19 @@ def notLoggedIn():
 def getAuthLevel():
     return db.session.execute("SELECT auth_level FROM users WHERE username=:username", {"username": session["username"]}).fetchone()[0]
 
+def getUserId():
+    return db.session.execute("SELECT id FROM users WHERE username=:username", {"username":session["username"]}).fetchone()[0]
+
 
 @app.route("/")
 def mainpage():
     if notLoggedIn():
         return redirect("/login")
 
-    user_id=db.session.execute("SELECT id FROM users WHERE username=:username", {"username":session["username"]}).fetchone()[0]
-    auth_level=db.session.execute("SELECT auth_level FROM users WHERE username=:username", {"username": session["username"]} ).fetchone()
+    user_id = getUserId()
+    auth_level = getAuthLevel()
 
-    if auth_level[0]>=1: #Moderators and admins can see all topics
+    if auth_level>=1: #Moderators and admins can see all topics
         sql="SELECT T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T;"
     else:
         sql="SELECT T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T LEFT JOIN topicsAccess TA ON TA.topic_id=T.id  WHERE T.is_hidden=False OR TA.user_id=:user_id;"
@@ -44,22 +44,73 @@ def mainpage():
 
 
 
-    return render_template("topics.html", topics=topics, auth_level=auth_level[0])
+    return render_template("topics.html", topics=topics, auth_level=auth_level)
+
+@app.route("/topic/<int:id>")
+def threads(id):
+    if notLoggedIn():
+        return redirect("/")
+
+    is_hidden = db.session.execute("SELECT is_hidden FROM topics WHERE id=:id", {"id":id}).fetchone()
+    if not is_hidden: #Check if the topic even exists.
+        return("Aihetta ei löytynyt. Yritä uudelleen!")
+    
+    if is_hidden[0]==True:
+        has_access=db.session.execute("SELECT topic_id FROM topicsAccess WHERE topic_id=:id AND user_id=:user_id", {"id":id, "user_id":getUserId()}).fetchone()
+        if not has_access: #If the topic is private, then check that the user has access to the topic.
+            return ("Sinulla ei ole pääsyä tähän aiheeseen. Mene pois! >:(")
+    
+    sql="SELECT U.username, T.thread_header, T.thread_desc, T.sent_at, T.edited_at FROM threads T LEFT JOIN users U ON U.id=T.poster_id WHERE T.topic_id=:topic_id"
+    threads=db.session.execute(sql, {"topic_id":id})
+    return render_template("threads.html", threads=threads, auth_level=getAuthLevel(), topic_id=id)
+
+@app.route("/topic/<int:id>/edit", methods=["GET"])
+def editTopicForm(id):
+    if notLoggedIn():
+        return redirect("/")
+
+
+    if getAuthLevel()<=1:
+        return ("You don't have the necessary permissions to perform this task.")
+
+    sql="SELECT topic_name, topic_desc, is_hidden FROM topics WHERE id=:id"
+    topic=db.session.execute(sql, {"id":id}).fetchone()
+
+    access=""
+    sql="SELECT U.username FROM users U LEFT JOIN topicsAccess TA ON TA.topic_id=:id AND U.id=TA.user_id"
+    for user in db.session.execute(sql, {"id":id}).fetchall(): #Get the usernames that have access to the topic.
+        access+=f"{user[0]}, "
+
+    return render_template(
+        "topic_editor.html",
+        title="Muokkaa aihetta",
+        submit="Tallenna muutokset",
+        action=f"/topic/{int}/edit",
+        topic=topic,
+        access=access)
+
+
 
 
 @app.route("/topic/new", methods=["GET"])
 def newTopic_form():
+    if notLoggedIn():
+        return redirect("/")
+
     try:
         if getAuthLevel()<=1:
             return ("You don't have the necessary permissions to perform this task.")
         
-        return render_template("topic_editor.html")
+        return render_template("topic_editor.html", title="Luo uusi aihe", submit="Luo aihe", action="/topic/new")
 
     except:
         return redirect("/")
 
 @app.route("/topic/new", methods=["POST"])
 def create_new_topic():
+    if notLoggedIn():
+        return redirect("/")
+
     topic_name=request.form["name"]
     topic_desc=request.form["desc"]
     access=request.form["access"]
