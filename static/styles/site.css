@@ -106,14 +106,14 @@
     margin-top: 50px;
     margin-left: 35vw;
     margin-right: 35vw;
-    background-color: #80bedb;
+    background-color: #6d8bc2;
     font-size: 1.3em;
     margin-bottom: 20px;
     border-radius: 15px;
     border-style: hidden;
 }
 
-.newThreadButton {
+.newThreadButton:hover{
     background-color: #53688f
 }
 
