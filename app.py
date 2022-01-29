@@ -55,6 +55,18 @@ def parseTopicForm(has_name_changed):
     
     return messages
 
+def checkThreadPerm(id):
+    if notLoggedIn():
+        return redirect("/")
+        
+    sql="SELECT thread_header, thread_desc, poster_id FROM threads WHERE id=:id"
+    thread=db.session.execute(sql, {"id":id}).fetchone()
+    if not thread:
+        return("Thread not found!")
+
+    elif thread["poster_id"]!=getUserId() and getAuthLevel()==0:
+        return ("You don't have permission to perform this action.")
+
 
 @app.route("/")
 def mainpage():
@@ -91,7 +103,7 @@ def threads(id):
         if not has_access: #If the topic is private, then check that the user has access to the topic.
             return ("Sinulla ei ole pääsyä tähän aiheeseen. Mene pois! >:(")
     
-    sql="SELECT U.username, U.auth_level, T.thread_header, T.thread_desc, T.sent_at, T.edited_at FROM threads T LEFT JOIN users U ON U.id=T.poster_id WHERE T.topic_id=:topic_id ORDER BY T.sent_at DESC"
+    sql="SELECT U.username, U.auth_level, T.thread_header, T.thread_desc, T.sent_at, T.edited_at, T.id FROM threads T LEFT JOIN users U ON U.id=T.poster_id WHERE T.topic_id=:topic_id ORDER BY T.sent_at DESC"
     threads=db.session.execute(sql, {"topic_id":id})
     return render_template("threads.html", threads=threads, auth_level=getAuthLevel(), topic_id=id)
 
@@ -333,4 +345,114 @@ def signout():
     del session["username"]
     return redirect("/")
 
+@app.route("/upgradeToAdmin")
+def upgradeToAdmin():
+    if notLoggedIn():
+        return redirect("/")
+    
+    if not db.session.execute("SELECT * FROM users WHERE auth_level=2").fetchone(): #If there are no admin users, then upgrade the current one to admin status. This is just for testing.
+        db.session.execute("UPDATE users SET auth_level=2 WHERE id=:id", {"id":getUserId()})
+        db.session.commit()
+    
+    return redirect("/")
 
+@app.route("/thread/<int:id>")
+def showThread(id):
+    if notLoggedIn():
+        return redirect("/")
+
+    sql="SELECT is_hidden FROM topics LEFT JOIN threads ON topics.id=threads.topic_id WHERE threads.id=:id" #Check if the user can see the topic under which the thread is placed
+    if db.session.execute(sql, {"id":id}).fetchone()[0]==False and getAuthLevel()==0:
+        sql="SELECT COUNT(*) FROM topicsAccess TA LEFT JOIN threads Th ON Th.topic_id=TA.topic_id WHERE TA.user_id=:user_id"
+        if db.session.execute(sql, {"user_id":getUserId()}).fetchone()==0:
+            return ("You don't have the rights to see this thread. Go away! >:(")
+
+    sql="SELECT Th.id, Th.thread_header, Th.thread_desc, Top.topic_name, Th.sent_at, Th.edited_at, U.username, U.auth_level FROM threads Th LEFT JOIN topics Top ON Th.topic_id=Top.id LEFT JOIN users U ON U.id=Th.poster_id WHERE Th.id=:id"
+    thread_info=db.session.execute(sql, {"id":id}).fetchone()
+    if not thread_info:
+        return ("Thread not found :(")
+    
+    return render_template("thread.html", thread_info=thread_info, logged_user=session["username"], user_auth_level=getAuthLevel())
+
+@app.route("/thread/<int:id>/delete", methods=["GET"])
+def confirmDeleteThread(id):
+    if notLoggedIn():
+        redirect("/")
+    
+    sql="SELECT id, poster_id, thread_header FROM threads WHERE id=:id"
+    thread=db.session.execute(sql, {"id":id}).fetchone()
+
+    if not thread: #If thread isn't found
+        return ("Thread not found!")
+    
+    elif thread["poster_id"]!=getUserId() and getAuthLevel()==0:
+        return ("You don't have permission to perform this action.")
+    
+    return render_template("delete_thread.html", thread=thread)
+
+@app.route("/thread/<int:id>/delete", methods=["POST"])
+def deleteThread(id):
+    if notLoggedIn():
+        return redirect("/")
+    
+    sql="SELECT id, poster_id, topic_id FROM threads WHERE id=:id"
+    thread=db.session.execute(sql, {"id":id}).fetchone()
+
+    if not thread: #If thread isn't found
+        return ("Thread not found!")
+    
+    elif thread["poster_id"]!=getUserId() and getAuthLevel()==0:
+        return ("You don't have permission to perform this action.")
+    
+    #TODO: delete all replies in the thread
+
+    sql="DELETE FROM threads WHERE id=:id"
+    db.session.execute(sql, {"id":id})
+    db.session.commit()
+
+    return redirect(f"/topic/{thread['topic_id']}")
+
+@app.route("/thread/<int:id>/edit", methods=["GET"])
+def editThreadForm(id):
+    check=checkThreadPerm(id)
+
+    if check!=None:
+        return check
+
+    sql="SELECT thread_header, thread_desc, poster_id FROM threads WHERE id=:id"
+    thread=db.session.execute(sql, {"id":id}).fetchone()
+    
+    return render_template("thread_editor.html",
+        title=f"Muokkaa viestiketjua {thread['thread_header']}",
+        thread_name=thread["thread_header"],
+        thread_desc=thread["thread_desc"],
+        submit="Tallenna muutokset",
+        action=f"/thread/{id}/edit")
+    
+@app.route("/thread/<int:id>/edit", methods=["POST"])
+def editThread(id):
+    check=checkThreadPerm(id)
+    
+    if check!=None:
+        return check
+
+    sql="SELECT thread_header, thread_desc, poster_id FROM threads WHERE id=:id"
+    thread=db.session.execute(sql, {"id":id}).fetchone()
+    
+    thread_header=request.form["name"]
+    thread_desc=request.form["desc"]
+
+    if len(thread_header)==0:
+        return render_template("thread_editor.html",
+        title=f"Muokkaa viestiketjua {thread['thread_header']}",
+        submit="Tallenna muutokset",
+        action=f"/thread/{id}/edit",
+        thread_header=thread_header,
+        thread_desc=thread_desc,
+        messages=["Ole hyvä, ja anna viestiketjulle otsikko!"])
+    
+    sql="UPDATE threads SET thread_header=:thread_header, thread_desc=:thread_desc, edited_at=NOW() WHERE id=:id"
+    db.session.execute(sql, {"thread_header":thread_header, "thread_desc":thread_desc, "id":id})
+    db.session.commit()
+
+    return redirect(f"/thread/{id}")

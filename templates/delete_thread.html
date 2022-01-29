@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+
+<form action="/thread/{{thread.id}}/delete" method="post">
+    <h1>Oletko varma että haluat poistaa viestiketjun {{thread.thread_header}}?</h1>
+    <a>Tämä poistaa myös kaikki vastaukset, jotka on julkaistu viestiketjussa</a>
+    <button type="submit" class="confirmDeleteButton"> Kyllä, haluan poistaa viestiketjun! </button>
+</form>
+<button class="newButton" onclick="window.location='/thread/{{thread.id}}'" style="font-size: 2em;">EIKU</button>
+
+{% endblock %}

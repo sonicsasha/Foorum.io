@@ -9,7 +9,7 @@
 {% block content %}
 
 {% for thread in threads %}
-<div class="thread" style="cursor: pointer;" onclick="window.location='/thread';">
+<div class="threadList" style="cursor: pointer;" onclick="window.location='/thread/{{thread.id}}';">
     <h1><a>{{thread.thread_header}}</a></h1></li>
     <h3><a>{{thread.thread_desc}}</a></h3>
     Viestiketjun aloittaja: 

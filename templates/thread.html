@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+
+<div class=thread>
+    <h1>{{thread_info.thread_header}}</h1>
+    {% if thread_info.auth_level == 2 %}
+    <h3 style=color:orange;>{{thread_info.username}}</h3>
+    {% endif %}
+
+    {% if thread_info.auth_level == 1 %}
+    <h3 style=color:yellow;>{{thread_info.username}}</h3>
+    {% endif %}
+
+    {% if thread_info.auth_level == 0 %}
+    <h3>{{thread_info.username}}</h3>
+    {% endif %}
+    <br>
+    <h2>{{thread_info.thread_desc}}</h2>
+    <br>
+    <br>
+    <a>Posted at: {{thread_info.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
+    <br>
+    {% if thread_info.edited_at %}
+    <a>Edited at: {{thread_info.edited_at.strftime("%d.%m.%Y %H:%M")}}</a>
+    {% endif %}
+
+    {% if thread_info.username==logged_user or user_auth_level >= 1 %}
+    <br>
+    <button class="editButton" onclick="window.location='/thread/{{thread_info.id}}/edit'">Edit</button>
+    <button class="deleteButton" onclick="window.location='/thread/{{thread_info.id}}/delete'">Delete</button>
+    {% endif %}
+</div>
+
+{% endblock %}
