@@ -55,7 +55,7 @@ def parseTopicForm(has_name_changed):
     
     return messages
 
-def checkThreadPerm(id):
+def checkThreadEditPerm(id):
     if notLoggedIn():
         return redirect("/")
         
@@ -66,6 +66,22 @@ def checkThreadPerm(id):
 
     elif thread["poster_id"]!=getUserId() and getAuthLevel()==0:
         return ("You don't have permission to perform this action.")
+
+def checkTopicPerm(thread_id):
+    try:
+        sql="SELECT topics.id FROM topics LEFT JOIN threads ON threads.topic_id=topics.id WHERE threads.id=:id"
+        topic_id=db.session.execute(sql, {"id":thread_id}).fetchone()[0] 
+    except:
+        return "Viestiketjua ei löytynyt"
+
+    is_hidden = db.session.execute("SELECT is_hidden FROM topics WHERE id=:id", {"id":topic_id}).fetchone()
+    if not is_hidden: #Check if the topic even exists.
+        return("Aihetta ei löytynyt. Yritä uudelleen!")
+    
+    if is_hidden[0]==True and getAuthLevel()==0:
+        has_access=db.session.execute("SELECT topic_id FROM topicsAccess WHERE topic_id=:id AND user_id=:user_id", {"id":topic_id, "user_id":getUserId()}).fetchone()
+        if not has_access: #If the topic is private, then check that the user has access to the topic.
+            return ("Sinulla ei ole pääsyä tähän aiheeseen. Mene pois! >:(")
 
 
 @app.route("/")
@@ -361,32 +377,37 @@ def showThread(id):
     if notLoggedIn():
         return redirect("/")
 
-    sql="SELECT is_hidden FROM topics LEFT JOIN threads ON topics.id=threads.topic_id WHERE threads.id=:id" #Check if the user can see the topic under which the thread is placed
-    if db.session.execute(sql, {"id":id}).fetchone()[0]==False and getAuthLevel()==0:
-        sql="SELECT COUNT(*) FROM topicsAccess TA LEFT JOIN threads Th ON Th.topic_id=TA.topic_id WHERE TA.user_id=:user_id"
-        if db.session.execute(sql, {"user_id":getUserId()}).fetchone()==0:
-            return ("You don't have the rights to see this thread. Go away! >:(")
+    check=checkTopicPerm(id)
+
+    if check!=None:
+        return check
 
     sql="SELECT Th.id, Th.thread_header, Th.thread_desc, Top.topic_name, Th.sent_at, Th.edited_at, U.username, U.auth_level FROM threads Th LEFT JOIN topics Top ON Th.topic_id=Top.id LEFT JOIN users U ON U.id=Th.poster_id WHERE Th.id=:id"
     thread_info=db.session.execute(sql, {"id":id}).fetchone()
     if not thread_info:
         return ("Thread not found :(")
     
-    return render_template("thread.html", thread_info=thread_info, logged_user=session["username"], user_auth_level=getAuthLevel())
+    sql="SELECT U.username, U.auth_level, R.id, R.message, R.sent_at, R.edited_at FROM replies R LEFT JOIN users U ON U.id=R.poster_id WHERE thread_id=:thread_id"
+    replies=db.session.execute(sql, {"thread_id":id})
+    
+    return render_template("thread.html", thread_info=thread_info, logged_user=session["username"], user_auth_level=getAuthLevel(), replies=replies)
 
 @app.route("/thread/<int:id>/delete", methods=["GET"])
 def confirmDeleteThread(id):
     if notLoggedIn():
         redirect("/")
     
+    sql="SELECT topics.id FROM topics LEFT JOIN threads ON threads.topic_id=topics.id WHERE threads.id=:id"
+    topic_id=db.session.execute(sql, {"id":id}).fetchone()[0] 
+
+    check=checkTopicPerm(topic_id)
+
+    if check!=None:
+        return check
+
     sql="SELECT id, poster_id, thread_header FROM threads WHERE id=:id"
     thread=db.session.execute(sql, {"id":id}).fetchone()
 
-    if not thread: #If thread isn't found
-        return ("Thread not found!")
-    
-    elif thread["poster_id"]!=getUserId() and getAuthLevel()==0:
-        return ("You don't have permission to perform this action.")
     
     return render_template("delete_thread.html", thread=thread)
 
@@ -395,15 +416,17 @@ def deleteThread(id):
     if notLoggedIn():
         return redirect("/")
     
-    sql="SELECT id, poster_id, topic_id FROM threads WHERE id=:id"
+    sql="SELECT topics.id FROM topics LEFT JOIN threads ON threads.topic_id=topics.id WHERE threads.id=:id"
+    topic_id=db.session.execute(sql, {"id":id}).fetchone()[0] 
+
+    check=checkTopicPerm(topic_id)
+
+    if check!=None:
+        return check
+    
+    sql="SELECT id, poster_id, thread_header FROM threads WHERE id=:id"
     thread=db.session.execute(sql, {"id":id}).fetchone()
 
-    if not thread: #If thread isn't found
-        return ("Thread not found!")
-    
-    elif thread["poster_id"]!=getUserId() and getAuthLevel()==0:
-        return ("You don't have permission to perform this action.")
-    
     #TODO: delete all replies in the thread
 
     sql="DELETE FROM threads WHERE id=:id"
@@ -414,7 +437,7 @@ def deleteThread(id):
 
 @app.route("/thread/<int:id>/edit", methods=["GET"])
 def editThreadForm(id):
-    check=checkThreadPerm(id)
+    check=checkThreadEditPerm(id)
 
     if check!=None:
         return check
@@ -431,7 +454,7 @@ def editThreadForm(id):
     
 @app.route("/thread/<int:id>/edit", methods=["POST"])
 def editThread(id):
-    check=checkThreadPerm(id)
+    check=checkThreadEditPerm(id)
     
     if check!=None:
         return check
@@ -456,3 +479,50 @@ def editThread(id):
     db.session.commit()
 
     return redirect(f"/thread/{id}")
+
+@app.route("/thread/<int:id>/new", methods=["GET"])
+def newReplyForm(id):
+    if notLoggedIn():
+        return ("/")
+     
+
+    check=checkTopicPerm(id)
+
+    if check!=None:
+        return check
+
+    #Get the name of the thread where the reply is being posted.
+    thread=db.session.execute("SELECT thread_header FROM threads WHERE id=:id", {"id":id}).fetchone()[0] 
+
+    return render_template("reply_editor.html", thread=thread, title="Vastaa viestiketjuun", submit="Vastaa")
+
+@app.route("/thread/<int:id>/new", methods=["POST"])
+def newReply(id):
+    if notLoggedIn():
+        return redirect("/")
+    
+    #Get the topic id and check if the user even has access to that topic.
+    sql="SELECT topics.id FROM topics LEFT JOIN threads ON thread.topic_id=topics.id LEFT JOIN replies ON replies.thread_id=thread.id WHERE thread.id=:id"
+    topic_id=db.session.execute(sql, {"id":id}).fetchone()[0] 
+
+    check=checkTopicPerm(topic_id)
+
+    if check!=None:
+        return check
+    
+    thread=db.session.execute("SELECT thread_header FROM threads WHERE id=:id", {"id":id}).fetchone()[0] 
+
+    if request.form["reply"].strip()=="":
+        return render_template("reply_editor.html", 
+        thread=thread,
+        title="Vastaa viestiketjuun",
+        submit="Vastaa",
+        messages=["Ole hyvä, ja anna vastaus!"])
+    
+    sql="INSERT INTO replies (poster_id, thread_id, message, sent_at) VALUES (:user_id, :thread_id, :message, NOW())"
+    db.session.execute(sql, {"user_id":getUserId(), "thread_id":id, "message":request.form["reply"]})
+    db.session.commit()
+
+    return redirect(f"/thread/{id}")
+
+    

@@ -87,15 +87,29 @@
     width: auto;
     margin-top:  50px;
     margin-bottom: 50px;
-    background-color: #6d8bc2;
+    background-color: #6d99c2;
     border-radius: 3px;
     border-style: solid;
-    border-width: 2px;
-    font-size: 0.8em;
+    border-width: 3px;
+    font-size: 1em;
     padding-left: 5px;
     padding-top: 1px;
     padding-bottom: 15px;
 }
+
+.reply {
+    margin-left: 15vw;
+    margin-right: 15vw;
+    background-color: #2c83ac;
+    width: auto;
+    padding-top: 2px;
+    padding-bottom: 15px;
+    padding-left: 10px;
+    border-style: solid;
+    border-width: 2px;
+    font-size: 0.9em;
+}
+
 
 
 .newButton {
@@ -138,7 +152,7 @@
     background-color: #80bedb;
     border-style: hidden;
     border-radius: 2px;
-    width: 5vh;
+    width: auto;
     height: 2vh;
 }
 .editButton:hover{
@@ -178,6 +192,7 @@
 .newButton:hover {
     background-color: #5c899e;
 }
+
 
 form {
     align-items: center;

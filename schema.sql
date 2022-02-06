@@ -5,9 +5,10 @@ CREATE TABLE users (
     auth_level INTEGER
 );
 
-CREATE TABLE messages (
+CREATE TABLE replies (
     id SERIAL PRIMARY KEY,
     poster_id INTEGER REFERENCES users,
+    thread_id INTEGER REFERENCES threads,
     message TEXT,
     sent_at TIMESTAMP,
     edited_at TIMESTAMP

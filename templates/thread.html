@@ -25,17 +25,45 @@
     <h2>{{thread_info.thread_desc}}</h2>
     <br>
     <br>
-    <a>Posted at: {{thread_info.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
+    <a>Julkaistu: {{thread_info.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
     <br>
     {% if thread_info.edited_at %}
-    <a>Edited at: {{thread_info.edited_at.strftime("%d.%m.%Y %H:%M")}}</a>
+    <a>Muokattu: {{thread_info.edited_at.strftime("%d.%m.%Y %H:%M")}}</a>
     {% endif %}
 
     {% if thread_info.username==logged_user or user_auth_level >= 1 %}
     <br>
-    <button class="editButton" onclick="window.location='/thread/{{thread_info.id}}/edit'">Edit</button>
-    <button class="deleteButton" onclick="window.location='/thread/{{thread_info.id}}/delete'">Delete</button>
+    <button class="editButton" onclick="window.location='/thread/{{thread_info.id}}/edit'">Muokkaa</button>
+    <button class="deleteButton" onclick="window.location='/thread/{{thread_info.id}}/delete'">Poista</button>
     {% endif %}
 </div>
+
+{% for reply in replies %}
+<div class="reply">
+    {% if reply.auth_level == 2 %}
+    <h3 style=color:orange;>{{reply.username}}</h3>
+    {% endif %}
+
+    {% if reply.auth_level == 1 %}
+    <h3 style=color:yellow;>{{reply.username}}</h3>
+    {% endif %}
+
+    {% if reply.auth_level == 0 %}
+    <h3>{{reply.username}}</h3>
+    {% endif %}
+
+    <h3>{{reply.message}}</h3>
+
+    <a>Julkaistu: {{reply.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
+
+    {% if reply.username==logged_user or user_auth_level >= 1 %}
+    <br>
+    <button class="editButton" onclick="window.location='/replies/{{reply.id}}/edit'">Muokkaa</button>
+    <button class="deleteButton" onclick="window.location='/replies/{{reply.id}}/delete'">Poista</button>
+    {% endif %}
+</div>
+{% endfor %}
+
+<button class="newThreadButton" onclick="window.location='/thread/{{thread_info.id}}/new'">Vastaa viestiketjuun</button>
 
 {% endblock %}
