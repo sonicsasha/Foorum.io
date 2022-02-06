@@ -10,7 +10,17 @@ A moderator can do anything a user can do, but also create new topics including 
 
 An admin can do everything a moderator can do, but also nominate other users to a moderator or an admin status, as well as edit any messages on the forum.
 
-# Current status (as of 23.1.2022)
-Right now users can create an account and also log in to said account. Admins can create new topics, moderators can see all topics, while regular users can only see public topics and topics that an admin has allowed them to see. Setting up an admin account can currently be done through psql with an account that has already been created. You can elevate yourself to an admin account with the following command:
+# Current status (as of 6.2.2022)
+- Users can create an account and log in into said account
+- Admins can create new topics and also edit said topics
+- Admins can create either public or private topics. If the topic is private, then admin can edit who can see said topic.
+- Users can create new threads and also edit or delete their own threads (admins and moderators can edit and delete any thread)
+- Users can reply to threads
 
-`UPDATE users SET auth_level=2 WHERE username='your_username';`
+# TODO
+- Editing and deleting replies to threads.
+- Search functionality.
+- Fix CSS when selecting a thread or a topic.
+- An admin page, where admins can nominate other users to either admin status or moderator status. (Right now if there are no admin accounts, the user can go to /upgradeToAdmin to upgrade their own account to admin status.)
+- Deleting topics?
+
