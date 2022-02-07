@@ -24,3 +24,5 @@ An admin can do everything a moderator can do, but also nominate other users to 
 - An admin page, where admins can nominate other users to either admin status or moderator status. (Right now if there are no admin accounts, the user can go to /upgradeToAdmin to upgrade their own account to admin status.)
 - Deleting topics?
 
+# Heroku
+You can test the app yourself over at https://foorum-io.herokuapp.com/
