@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+
+<form action="/replies/{{reply.id}}/delete" method="post">
+    <h1>Oletko varma että haluat poistaa alla olevan vastauksen?</h1>
+    <div class="reply" style="text-align: left;">
+        {% if reply.auth_level == 2 %}
+        <h3 style=color:orange;>{{reply.username}}</h3>
+        {% endif %}
+    
+        {% if reply.auth_level == 1 %}
+        <h3 style=color:yellow;>{{reply.username}}</h3>
+        {% endif %}
+    
+        {% if reply.auth_level == 0 %}
+        <h3>{{reply.username}}</h3>
+        {% endif %}
+    
+        <h3>{{reply.message}}</h3>
+    
+        <a>Julkaistu: {{reply.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
+    </div>
+    <a>Tätä operaatiota ei voi peruuttaa!</a>
+    <button type="submit" class="confirmDeleteButton"> Kyllä, haluan poistaa vastauksen! </button>
+</form>
+<button class="newButton" onclick="window.location='/thread/{{reply.thread_id}}'" style="font-size: 2em;">EIKU</button>
+
+{% endblock %}

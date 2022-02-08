@@ -525,4 +525,47 @@ def newReply(id):
 
     return redirect(f"/thread/{id}")
 
+@app.route("/replies/<int:id>/delete", methods=["GET"])
+def deleteReplyConfirm(id):
+    if notLoggedIn():
+        return redirect("/")
+
+    if getAuthLevel()==0: #Check if the user can delete the reply
+        sql="SELECT poster_id FROM replies WHERE id=:reply_id"
+        poster_id=db.session.execute(sql, {"reply_id":id}).fetchone()
+
+        if getUserId()!=poster_id[0]:
+            return ("Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
+
+    sql="SELECT U.username, U.auth_level, R.id, R.message, R.sent_at, R.edited_at, R.thread_id FROM replies R LEFT JOIN users U ON U.id=R.poster_id WHERE R.id=:id"
+    reply=db.session.execute(sql, {"id":id}).fetchone()
+
+    if not reply:
+        return ("Vastausta jota halusit muokata ei löydy.")
+
+    return render_template("reply_delete.html", reply=reply)
+
+@app.route("/replies/<int:id>/delete", methods=["POST"])
+def deleteReply(id):
+    if notLoggedIn():
+        return redirect("/")
     
+
+    if getAuthLevel()==0: #Check if the user can delete the reply
+        sql="SELECT poster_id FROM replies WHERE id=:reply_id"
+        poster_id=db.session.execute(sql, {"reply_id":id}).fetchone()
+        if not poster_id:
+            return ("Vastausta jota halusit muokata ei löydy.")
+
+        if getUserId()!=poster_id[0]:
+            return ("Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
+    
+    thread_id=db.session.execute("SELECT thread_id FROM replies WHERE id=:id", {"id":id}).fetchone()
+    if not thread_id:
+        return ("Vastausta jota halusit muokata ei löydy")
+
+    sql="DELETE FROM replies WHERE id=:id"
+    db.session.execute(sql, {"id":id})
+    db.session.commit()
+
+    return redirect(f"/thread/{thread_id[0]}")
