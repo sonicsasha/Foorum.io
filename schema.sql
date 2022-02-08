@@ -5,13 +5,12 @@ CREATE TABLE users (
     auth_level INTEGER
 );
 
-CREATE TABLE replies (
+CREATE TABLE topics (
     id SERIAL PRIMARY KEY,
-    poster_id INTEGER REFERENCES users,
-    thread_id INTEGER REFERENCES threads,
-    message TEXT,
-    sent_at TIMESTAMP,
-    edited_at TIMESTAMP
+    topic_name TEXT UNIQUE,
+    topic_desc TEXT,
+    is_hidden BOOLEAN
+
 );
 
 CREATE TABLE threads (
@@ -24,12 +23,13 @@ CREATE TABLE threads (
     edited_at TIMESTAMP
 );
 
-CREATE TABLE topics (
+CREATE TABLE replies (
     id SERIAL PRIMARY KEY,
-    topic_name TEXT UNIQUE,
-    topic_desc TEXT,
-    is_hidden BOOLEAN
-
+    poster_id INTEGER REFERENCES users,
+    thread_id INTEGER REFERENCES threads,
+    message TEXT,
+    sent_at TIMESTAMP,
+    edited_at TIMESTAMP
 );
 
 CREATE TABLE topicsAccess (
