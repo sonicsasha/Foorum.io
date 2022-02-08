@@ -387,7 +387,7 @@ def showThread(id):
     if not thread_info:
         return ("Thread not found :(")
     
-    sql="SELECT U.username, U.auth_level, R.id, R.message, R.sent_at, R.edited_at FROM replies R LEFT JOIN users U ON U.id=R.poster_id WHERE thread_id=:thread_id"
+    sql="SELECT U.username, U.auth_level, R.id, R.message, R.sent_at, R.edited_at FROM replies R LEFT JOIN users U ON U.id=R.poster_id WHERE thread_id=:thread_id ORDER BY R.sent_at"
     replies=db.session.execute(sql, {"thread_id":id})
     
     return render_template("thread.html", thread_info=thread_info, logged_user=session["username"], user_auth_level=getAuthLevel(), replies=replies)
@@ -502,7 +502,7 @@ def newReply(id):
         return redirect("/")
     
     #Get the topic id and check if the user even has access to that topic.
-    sql="SELECT topics.id FROM topics LEFT JOIN threads ON thread.topic_id=topics.id LEFT JOIN replies ON replies.thread_id=thread.id WHERE thread.id=:id"
+    sql="SELECT topics.id FROM topics LEFT JOIN threads ON threads.topic_id=topics.id LEFT JOIN replies ON replies.thread_id=threads.id WHERE threads.id=:id"
     topic_id=db.session.execute(sql, {"id":id}).fetchone()[0] 
 
     check=checkTopicPerm(topic_id)
