@@ -569,3 +569,60 @@ def deleteReply(id):
     db.session.commit()
 
     return redirect(f"/thread/{thread_id[0]}")
+
+@app.route("/replies/<int:id>/edit", methods=["GET"])
+def replyEditForm(id):
+    if notLoggedIn():
+        return redirect("/")
+    
+    if getAuthLevel()==0: #Check if the user can delete the reply
+        sql="SELECT poster_id FROM replies WHERE id=:reply_id"
+        poster_id=db.session.execute(sql, {"reply_id":id}).fetchone()
+        if not poster_id:
+            return ("Vastausta jota halusit muokata ei löydy.")
+
+        if getUserId()!=poster_id[0]:
+            return ("Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
+    
+    sql="SELECT T.thread_header, R.message FROM replies R LEFT JOIN threads T ON R.thread_id = T.id WHERE R.id = :id"
+    reply=db.session.execute(sql, {"id":id}).fetchone()
+
+    return render_template("reply_editor.html", 
+        title=f"Muokkaa viestiä",
+        thread = reply["thread_header"],
+        reply=reply["message"],
+        submit="Tallenna muutokset"
+    )
+
+@app.route("/replies/<int:id>/edit", methods=["POST"])
+def editReply(id):
+    if notLoggedIn():
+        return redirect("/")
+    
+    if getAuthLevel()==0: #Check if the user can delete the reply
+        sql="SELECT poster_id FROM replies WHERE id=:reply_id"
+        poster_id=db.session.execute(sql, {"reply_id":id}).fetchone()
+        if not poster_id:
+            return ("Vastausta jota halusit muokata ei löydy.")
+
+        if getUserId()!=poster_id[0]:
+            return ("Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
+    
+    sql="SELECT R.thread_id, T.thread_header, R.message FROM replies R LEFT JOIN threads T ON R.thread_id = T.id WHERE R.id = :id"
+    reply=db.session.execute(sql, {"id":id}).fetchone()
+
+    if request.form["reply"].strip()=="":
+        return render_template("reply_editor.html",
+            title="Muokkaa viestiä",
+            thread = reply["thread_header"],
+            reply=request.form["reply"],
+            submit="Tallenna muutokset",
+            messages=["Ole hyvä, ja anna vastaus!"]
+            )
+    
+    db.session.execute("UPDATE replies SET message=:message, edited_at=NOW() WHERE id=:id", {"message":request.form["reply"], "id":id})
+    db.session.commit()
+
+    return redirect(f"/thread/{reply['thread_id']}")
+    
+

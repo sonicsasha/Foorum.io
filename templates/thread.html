@@ -56,6 +56,13 @@
 
     <a>Julkaistu: {{reply.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
 
+    {% if reply.edited_at %}
+
+    <br>
+    <a>Muokattu: {{reply.edited_at.strftime("%d.%m.%Y %H:%M")}}</a>
+
+    {% endif %}
+
     {% if reply.username==logged_user or user_auth_level >= 1 %}
     <br>
     <button class="editButton" onclick="window.location='/replies/{{reply.id}}/edit'">Muokkaa</button>
