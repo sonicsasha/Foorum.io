@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+
+<form action="/admin/nominate" method="post">
+    <h2>Ylennä käyttäjä</h2>
+    <a>Valitse käyttäjä:</a>
+    <br>
+    <br>
+    <input list="user" name="user" class="userlist">
+    <datalist id="user" name="user" class="userlist">
+        {% for user in users %}
+        <option value="{{user.username}}">
+        {% endfor %}
+    </datalist>
+    <br>
+    <input type="radio" name="nominate_type" value="moderator" checked> Moderaattori
+    <input type="radio" name="nominate_type" value="admin"> Ylläpitäjä
+
+    <button type="submit" class="adminButton"> Ylennä käyttäjä</button>
+  </form> 
+
+{% endblock %}

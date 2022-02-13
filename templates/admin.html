@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+
+<h2 style="text-align:center">Valitse toiminto</h2>
+<button type="submit" class="adminButton" onclick="window.location='/admin/nominate'"> Myönnä oikeuksia käyttäjälle </button>
+<button type="submit" class="confirmDeleteButton" onclick="window.location='/admin/ban'">Aseta käyttäjä kieltoon/poista kiellosta</button>
+
+{% endblock %}

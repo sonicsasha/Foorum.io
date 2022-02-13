@@ -10,6 +10,7 @@ import msg_threads
 import accounts
 import replies
 import search
+import admin
 
 app = Flask(__name__)
 app.secret_key = getenv("SECRET_KEY")
@@ -135,5 +136,16 @@ def searchForm():
 @app.route("/search", methods=["POST"])
 def getSearchResults():
     return search.getSearchResults()
-    
+
+@app.route("/admin", methods=["GET"])
+def adminForm():
+    return admin.adminForm()
+
+@app.route("/admin/nominate", methods=["GET"])
+def nominateForm():
+    return admin.nominateForm()
+
+@app.route("/admin/nominate", methods=["POST"])
+def nominate():
+    return admin.nominate()
 
