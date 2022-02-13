@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+<br>
+<form action="/search" method="post">
+    Hakusana:
+    <br>
+    <input type="text" value="{{query}}" name="query">
+    <br>
+    Hakukohde:
+    <br>
+    <input type="radio" name="search_type" value="topic"> Aihe
+    <input type="radio" name="search_type" value="thread"> Viestiketju
+    <input type="radio" name="search_type" value="reply"> Vastaus
+    <br>
+    {% for message in messages %}
+
+    <a style="color: red; text-align: center;">{{message}}</a>
+    <br>
+
+    {% endfor %}
+    <input type="submit" value="Hae">
+</form>
+
+
+{% for result in results %}
+
+{% if result_type == 'topic' %}
+
+<div class="topic" style="cursor: pointer;" onclick="window.location='/topic/{{ result.id }}';">
+    <h1><a>{{ result.topic_name }}</a></h1></li>
+    <h3><a>{{ result.topic_desc}}</a></h3>
+    {% if result.is_hidden %}
+    <h3><a style="color: red">YKSITYINEN</h3>
+    {% endif %}
+    <a>Viestiketjujen määrä: {{result.count}}</a>
+</div>
+
+{% endif %}
+
+{% if result_type == 'thread' %}
+
+<div class="threadList" style="cursor: pointer;" onclick="window.location='/thread/{{result.id}}';">
+    <h1><a>{{result.thread_header}} aiheesta {{result.topic_name}}</a></h1></li>
+    <h3><a>{{result.thread_desc}}</a></h3>
+    Viestiketjun aloittaja: 
+
+    {% if result.auth_level == 2 %}
+    <a style=color:orange;>{{result.username}}</a>
+    {% endif %}
+
+    {% if result.auth_level == 1 %}
+    <a style=color:yellow;>{{result.username}}</a>
+    {% endif %}
+
+    {% if result.auth_level == 0 %}
+    <a>{{result.username}}</a>
+    {% endif %}
+    <br>
+    <a>Aloitettu: {{result.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
+    <br>
+    <a>Vastauksien määrä: {{result.count}}</a>
+    <br>
+    {% if result.max %}
+    <a>Viimeisin vastaus: {{result.max.strftime("%d.%m.%Y %H:%M")}}</a>
+    {% endif %}
+</div>
+
+{% endif %}
+
+{% if result_type == 'reply' %}
+
+<div class="reply" style="cursor:pointer" onclick="window.location='/thread/{{result.id}}';">
+    <h2>Vastaus viestiketjuun {{result.thread_header}}</h2>
+    {% if result.auth_level == 2 %}
+    <h3 style=color:orange;>{{result.username}}</h3>
+    {% endif %}
+
+    {% if result.auth_level == 1 %}
+    <h3 style=color:yellow;>{{result.username}}</h3>
+    {% endif %}
+
+    {% if result.auth_level == 0 %}
+    <h3>{{result.username}}</h3>
+    {% endif %}
+
+    <h3>{{result.message}}</h3>
+
+    <a>Julkaistu: {{result.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
+
+    {% if result.edited_at %}
+
+    <br>
+    <a>Muokattu: {{result.edited_at.strftime("%d.%m.%Y %H:%M")}}</a>
+
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+{% endfor %}
+
+{% endblock %}

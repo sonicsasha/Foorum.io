@@ -98,9 +98,10 @@
 }
 
 .reply {
+    margin-top: 10px;
     margin-left: 15vw;
     margin-right: 15vw;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     background-color: #2c83ac;
     width: auto;
     padding-top: 2px;

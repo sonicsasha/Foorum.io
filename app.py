@@ -1,4 +1,3 @@
-from concurrent.futures import thread
 from urllib import request
 from flask import Flask
 from flask import render_template, request, session, redirect
@@ -7,9 +6,10 @@ from os import access, getenv
 from werkzeug.security import check_password_hash, generate_password_hash
 import common
 import topics
-import threads
+import msg_threads
 import accounts
 import replies
+import search
 
 app = Flask(__name__)
 app.secret_key = getenv("SECRET_KEY")
@@ -38,11 +38,11 @@ def editTopicSubmit(id):
 
 @app.route("/topic/<int:id>/new", methods=["GET"])
 def newThreadForm(id):
-    return threads.newThreadForm(id)
+    return msg_threads.newThreadForm(id)
 
 @app.route("/topic/<int:id>/new", methods=["POST"])
 def newThreadSubmit(id):
-    return threads.newThreadSubmit(id)
+    return msg_threads.newThreadSubmit(id)
     
 
 
@@ -86,23 +86,23 @@ def upgradeToAdmin():
 
 @app.route("/thread/<int:id>")
 def showThread(id):
-    return threads.showThread(id)
+    return msg_threads.showThread(id)
 
 @app.route("/thread/<int:id>/delete", methods=["GET"])
 def confirmDeleteThread(id):
-    return threads.confirmDeleteThread(id)
+    return msg_threads.confirmDeleteThread(id)
 
 @app.route("/thread/<int:id>/delete", methods=["POST"])
 def deleteThread(id):
-    return threads.deleteThread(id)
+    return msg_threads.deleteThread(id)
 
 @app.route("/thread/<int:id>/edit", methods=["GET"])
 def editThreadForm(id):
-    return threads.editThreadForm(id)
+    return msg_threads.editThreadForm(id)
     
 @app.route("/thread/<int:id>/edit", methods=["POST"])
 def editThread(id):
-    return threads.editThread(id)
+    return msg_threads.editThread(id)
 
 @app.route("/thread/<int:id>/new", methods=["GET"])
 def newReplyForm(id):
@@ -127,5 +127,13 @@ def replyEditForm(id):
 @app.route("/replies/<int:id>/edit", methods=["POST"])
 def editReply(id):
     return replies.editReply(id)
+
+@app.route("/search", methods=["GET"])
+def searchForm():
+    return search.searchForm()
+
+@app.route("/search", methods=["POST"])
+def getSearchResults():
+    return search.getSearchResults()
     
 
