@@ -93,9 +93,9 @@ def mainpage():
     auth_level = getAuthLevel()
 
     if auth_level>=1: #Moderators and admins can see all topics
-        sql="SELECT T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T ORDER BY T.id;"
+        sql="SELECT COUNT(threads.id), T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T LEFT JOIN threads ON threads.topic_id=T.id GROUP BY T.id ORDER BY T.id;"
     else:
-        sql="SELECT T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T LEFT JOIN topicsAccess TA ON TA.topic_id=T.id  WHERE T.is_hidden=False OR TA.user_id=:user_id ORDER BY T.id;"
+        sql="SELECT COUNT(threads.id), T.id, T.topic_name, T.topic_desc, T.is_hidden FROM topics T LEFT JOIN topicsAccess TA ON TA.topic_id=T.id LEFT JOIN threads ON threads.topic_id=T.id WHERE T.is_hidden=False OR TA.user_id=:user_id GROUP BY T.id ORDER BY T.id;"
     
     topics=db.session.execute(sql, {"user_id":user_id}).fetchall()
     print(topics)
@@ -119,7 +119,7 @@ def threads(id):
         if not has_access: #If the topic is private, then check that the user has access to the topic.
             return ("Sinulla ei ole pääsyä tähän aiheeseen. Mene pois! >:(")
     
-    sql="SELECT U.username, U.auth_level, T.thread_header, T.thread_desc, T.sent_at, T.edited_at, T.id FROM threads T LEFT JOIN users U ON U.id=T.poster_id WHERE T.topic_id=:topic_id ORDER BY T.sent_at DESC"
+    sql="SELECT T.id, U.username, U.auth_level, T.thread_header, T.thread_desc, T.sent_at, T.edited_at, MAX(R.sent_at), COUNT(R.sent_at) FROM threads T LEFT JOIN users U ON U.id=T.poster_id LEFT JOIN replies R ON R.thread_id=T.id WHERE T.topic_id=:topic_id GROUP BY T.id, U.username, U.auth_level ORDER BY T.sent_at DESC"
     threads=db.session.execute(sql, {"topic_id":id})
     return render_template("threads.html", threads=threads, auth_level=getAuthLevel(), topic_id=id)
 
@@ -385,7 +385,7 @@ def showThread(id):
     sql="SELECT Th.id, Th.thread_header, Th.thread_desc, Top.topic_name, Th.sent_at, Th.edited_at, U.username, U.auth_level FROM threads Th LEFT JOIN topics Top ON Th.topic_id=Top.id LEFT JOIN users U ON U.id=Th.poster_id WHERE Th.id=:id"
     thread_info=db.session.execute(sql, {"id":id}).fetchone()
     if not thread_info:
-        return ("Thread not found :(")
+        return ("Viestiketjua ei löytynyt:(")
     
     sql="SELECT U.username, U.auth_level, R.id, R.message, R.sent_at, R.edited_at FROM replies R LEFT JOIN users U ON U.id=R.poster_id WHERE thread_id=:thread_id ORDER BY R.sent_at"
     replies=db.session.execute(sql, {"thread_id":id})

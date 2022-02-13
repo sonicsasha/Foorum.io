@@ -28,7 +28,11 @@
     <br>
     <a>Aloitettu: {{thread.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
     <br>
-    <a>Viimeisin vastaus: TODO</a>
+    <a>Vastauksien määrä: {{thread.count}}</a>
+    <br>
+    {% if thread.max %}
+    <a>Viimeisin vastaus: {{thread.max.strftime("%d.%m.%Y %H:%M")}}</a>
+    {% endif %}
 </div>
 {% endfor %}
 

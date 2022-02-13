@@ -16,9 +16,7 @@
     {% if topic.is_hidden %}
     <h3><a style="color: red">YKSITYINEN</h3>
     {% endif %}
-    <a>Total threads: TODO</a>
-    <br>
-    <a>Latest reply: TODO</a>
+    <a>Viestiketjujen määrä: {{topic.count}}</a>
 </div>
 {% endfor %}
 
