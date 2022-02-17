@@ -45,7 +45,6 @@ def nominate():
     if request.form["nominate_type"]=="moderator":
         db.session.execute("UPDATE users SET auth_level=1 WHERE username=:username", {"username":request.form["user"]})
         db.session.commit()
-        print("Upgraded to mod")
     
     if request.form["nominate_type"]=="admin":
         db.session.execute("UPDATE users SET auth_level=2 WHERE username=:username", {"username":request.form["user"]})
@@ -53,4 +52,35 @@ def nominate():
     
     return redirect("/admin/nominate")
     
+def banForm():
+    if common.notLoggedIn():
+        abort(404)
+    
+    if common.getAuthLevel()<2:
+        abort(404)
+    
+    sql="SELECT U.username FROM users U LEFT JOIN bans B ON B.user_id!=U.id"
+    users=db.session.execute(sql).fetchall()
+
+    return render_template("admin_ban.html", users=users)
+
+def banUser():
+
+    if common.notLoggedIn():
+        abort(404)
+    
+    if common.getAuthLevel()<2:
+        abort(404)
+    
+    sql="SELECT id FROM users WHERE username=:username"
+    user_id=db.session.execute(sql, {"username":request.form["ban_user"]}).fetchone()
+    reason=request.form["ban_reason"]
+
+    if not user_id:
+        return render_template("admin_ban.html", messages=["Käyttäjää ei löytynyt. Yritä uudelleen!"])
+
+    db.session.execute("INSERT INTO bans VALUES (:user_id, :reason)", {"user_id":user_id[0], "reason":reason})
+    db.session.commit()
+
+    return redirect("/admin/ban")
 

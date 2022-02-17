@@ -36,3 +36,8 @@ CREATE TABLE topicsAccess (
     user_id INTEGER REFERENCES users,
     topic_id INTEGER REFERENCES topics
 );
+
+CREATE TABLE bans (
+    user_id INTEGER UNIQUE REFERENCES users,
+    reason TEXT
+);

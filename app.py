@@ -1,4 +1,3 @@
-from urllib import request
 from flask import Flask
 from flask import render_template, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
@@ -149,3 +148,10 @@ def nominateForm():
 def nominate():
     return admin.nominate()
 
+@app.route("/admin/ban", methods=["GET"])
+def banForm():
+    return admin.banForm()
+
+@app.route("/admin/ban", methods=["POST"])
+def banUser():
+    return admin.banUser()

@@ -24,6 +24,12 @@ def login():
         return render_template("login_form.html", messages=["Käyttäjää ei löytynyt tai salasana on väärä. Yritä uudelleen!"])
     else:
         session["username"]=user.username
+
+        ban_check=db.session.execute("SELECT reason FROM bans WHERE user_id=:user_id", {"user_id": common.getUserId()}).fetchone()
+        if ban_check:
+            del session["username"]
+            return render_template("login_form.html", messages=[f"Tämä käyttäjä on asetettu kieltoon seuraavasta syystä: {ban_check[0]}"])
+
         return redirect("/")
 
 

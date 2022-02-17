@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static',filename='styles/site.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Foorum.io</title>
+
+{% extends "site_layout.html" %}
+
+{% block content %}
+
+<form action="/admin/ban" method="post">
+    <h2>Aseta käyttäjä kieltoon</h2>
+    <a>Valitse käyttäjä:</a>
+    <br>
+    <br>
+    <input list="user" name="ban_user" class="userlist">
+    <datalist id="user" name="ban_user" class="userlist">
+        {% for user in users %}
+        <option value="{{user.username}}">
+        {% endfor %}
+    </datalist>
+    <br>
+    <br>
+    <a>Syy kiellolle:</a>
+    <br>
+    <input type="text" name="ban_reason">
+    <br>
+    {% for message in messages %}
+    <a style="color: red">{{message}}</a>
+    {% endfor %}
+    <button type="submit" class="confirmDeleteButton"> Aseta kieltoon</button>
+  </form> 
+
+{% endblock %}
