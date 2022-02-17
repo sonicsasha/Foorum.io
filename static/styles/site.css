@@ -36,6 +36,7 @@
     color: hsl(0, 0%, 83%)
 }
 
+
 .topic {
     font-size: 1.5e;
     margin-left: 20vw;
@@ -55,7 +56,7 @@
 
 }
 
-.topic :hover {
+.topic div :hover {
     background-color: #8aa0aa;
 }
 
