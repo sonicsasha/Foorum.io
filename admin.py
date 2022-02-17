@@ -59,10 +59,13 @@ def banForm():
     if common.getAuthLevel()<2:
         abort(404)
     
-    sql="SELECT U.username FROM users U LEFT JOIN bans B ON B.user_id!=U.id"
+    sql="SELECT U.username FROM users U LEFT JOIN bans B ON B.user_id=U.id WHERE B.user_id IS NULL"
     users=db.session.execute(sql).fetchall()
 
-    return render_template("admin_ban.html", users=users)
+    sql="SELECT U.username FROM users U LEFT JOIN bans B ON B.user_id=U.id WHERE B.user_id=U.id"
+    banned_users=db.session.execute(sql).fetchall()
+
+    return render_template("admin_ban.html", users=users, banned_users=banned_users)
 
 def banUser():
 
@@ -79,8 +82,29 @@ def banUser():
     if not user_id:
         return render_template("admin_ban.html", messages=["Käyttäjää ei löytynyt. Yritä uudelleen!"])
 
-    db.session.execute("INSERT INTO bans VALUES (:user_id, :reason)", {"user_id":user_id[0], "reason":reason})
-    db.session.commit()
+    try:
+        db.session.execute("INSERT INTO bans VALUES (:user_id, :reason)", {"user_id":user_id[0], "reason":reason})
+        db.session.commit()
+    except:
+        return render_template("admin_ban.html", messages=["Käyttäjälle on jo asetettu käyttökielto!"])
 
     return redirect("/admin/ban")
 
+def unbanUser():
+
+    if common.notLoggedIn():
+        abort(404)
+    
+    if common.getAuthLevel()<2:
+        abort(404)
+    
+    sql="SELECT id FROM users WHERE username=:username"
+    user_id=db.session.execute(sql, {"username":request.form["unban_user"]}).fetchone()
+
+    if not user_id:
+        return render_template("admin_ban.html", unban_messages=["Käyttäjää ei löytynyt. Yritä uudelleen!"])
+    
+    db.session.execute("DELETE FROM bans WHERE user_id=:user_id", {"user_id":user_id[0]})
+    db.session.commit()
+
+    return redirect ("/admin/ban")

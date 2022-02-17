@@ -43,11 +43,6 @@ def newThreadForm(id):
 @app.route("/topic/<int:id>/new", methods=["POST"])
 def newThreadSubmit(id):
     return msg_threads.newThreadSubmit(id)
-    
-
-
-
-
 
 @app.route("/topic/new", methods=["GET"])
 def newTopicForm():
@@ -155,3 +150,7 @@ def banForm():
 @app.route("/admin/ban", methods=["POST"])
 def banUser():
     return admin.banUser()
+
+@app.route("/admin/unban", methods=["POST"])
+def unbanUser():
+    return admin.unbanUser()
