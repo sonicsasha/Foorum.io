@@ -1,10 +1,6 @@
-from http.client import InvalidURL
-from urllib import request, response
-from xml.dom import NotFoundErr
 from flask import Flask
 from flask import render_template, request, session, redirect, abort
 from flask_sqlalchemy import SQLAlchemy
-from flask_api import status
 from os import access, getenv
 from werkzeug.security import check_password_hash, generate_password_hash
 import common

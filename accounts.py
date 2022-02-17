@@ -1,4 +1,3 @@
-from urllib import request
 from flask import Flask
 from flask import render_template, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
