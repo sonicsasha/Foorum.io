@@ -20,7 +20,9 @@ An admin can do everything a moderator can do, but also nominate other users to 
 - Admins can access a special admin page, where they can nominate users to an admin or a moderator role, and also ban and unban users.
 
 # TODO
-- Deleting topics? Is it necessary?
+- Make replies more readable. Right now usernames and the reply itself are the same size.
+- Adjust the colors.
+- Add CSRF protection.
 
 # Heroku
 You can test the app yourself over at https://foorum-io.herokuapp.com/
