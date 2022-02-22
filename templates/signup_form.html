@@ -30,6 +30,7 @@
         <p style="color:red;"> {{ message }} </p>
         {% endfor %}
         <br>
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
         <input type="submit" value="Luo tili">
         <br>
         <br>

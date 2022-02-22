@@ -11,6 +11,7 @@
 <form action="/thread/{{thread.id}}/delete" method="post">
     <h1>Oletko varma että haluat poistaa viestiketjun {{thread.thread_header}}?</h1>
     <a>Tämä poistaa myös kaikki vastaukset, jotka on julkaistu viestiketjussa</a>
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     <button type="submit" class="confirmDeleteButton"> Kyllä, haluan poistaa viestiketjun! </button>
 </form>
 <button class="newButton" onclick="window.location='/thread/{{thread.id}}'" style="font-size: 2em;">EIKU</button>

@@ -81,6 +81,8 @@ def editTopicSubmit(id):
         return redirect("/")
     elif common.getAuthLevel()<2:
         return ("You don't have the rights to perform this task!")
+    
+    common.CSRFCheck()
 
     sql="SELECT topic_name FROM topics WHERE id=:id"
     topic=db.session.execute(sql, {"id":id}).fetchone()
@@ -138,6 +140,8 @@ def newTopicForm():
 def createNewTopic():
     if common.notLoggedIn():
         return redirect("/")
+    
+    common.CSRFCheck()
 
     if request.form["privacy"]=="public":
         hidden=False

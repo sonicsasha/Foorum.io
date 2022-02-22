@@ -28,6 +28,7 @@
         <a>Julkaistu: {{reply.sent_at.strftime("%d.%m.%Y %H:%M")}}</a>
     </div>
     <a>Tätä operaatiota ei voi peruuttaa!</a>
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     <button type="submit" class="confirmDeleteButton"> Kyllä, haluan poistaa vastauksen! </button>
 </form>
 <button class="newButton" onclick="window.location='/thread/{{reply.thread_id}}'" style="font-size: 2em;">EIKU</button>

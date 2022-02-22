@@ -28,6 +28,7 @@
   {% for message in messages %}
   <a style="color: red">{{message}}</a>
   {% endfor %}
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
   <button type="submit" class="confirmDeleteButton"> Aseta kieltoon</button>
 </form> 
 
@@ -48,6 +49,7 @@
   <a style="color: red">{{message}}</a>
   {% endfor %}
   <br>
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
   <button type="submit" class="confirmDeleteButton">Poista kiellosta</button>
 </form> 
 

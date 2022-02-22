@@ -24,6 +24,8 @@ def getSearchResults():
     if common.notLoggedIn():
         return redirect("/")
     
+    common.CSRFCheck()
+    
     messages=[]
 
     query=request.form["query"]

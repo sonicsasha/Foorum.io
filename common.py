@@ -1,6 +1,6 @@
 from urllib import request
 from flask import Flask
-from flask import render_template, request, session, redirect
+from flask import render_template, request, session, redirect, abort
 from flask_sqlalchemy import SQLAlchemy
 from os import access, getenv
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -80,3 +80,7 @@ def checkTopicPerm(thread_id):
         has_access=db.session.execute("SELECT topic_id FROM topicsAccess WHERE topic_id=:id AND user_id=:user_id", {"id":topic_id, "user_id":getUserId()}).fetchone()
         if not has_access: #If the topic is private, then check that the user has access to the topic.
             return ("Sinulla ei ole pääsyä tähän aiheeseen. Mene pois! >:(")
+
+def CSRFCheck():
+    if session["csrf_token"] != request.form["csrf_token"]:
+        abort(403)

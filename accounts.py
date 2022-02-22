@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from os import access, getenv
 from werkzeug.security import check_password_hash, generate_password_hash
 import common
+import secrets
 
 app = Flask(__name__)
 app.secret_key = getenv("SECRET_KEY")
@@ -12,11 +13,14 @@ app.config["SQLALCHEMY_DATABASE_URI"]=getenv("DATABASE_URL")
 db = SQLAlchemy(app)
 
 def loginForm():
+    session["csrf_token"] = secrets.token_hex(16) #Generate the CSRF-token when the login screen is rendered, since this step cannot be skipped.
     return render_template("login_form.html")
 
 def login():
     sql = "SELECT username, password FROM users WHERE username=:username"
     user = db.session.execute(sql, {"username": request.form["username"]}).fetchone()
+
+    common.CSRFCheck()
 
     #Fail to log in if the user inputs a wrong username or the wrong password. No distinction due to cyber security.
     if not user or check_password_hash(user.password, request.form["password"])==False: 

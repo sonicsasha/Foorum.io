@@ -32,6 +32,8 @@ def newReply(id):
     if common.notLoggedIn():
         return redirect("/")
     
+    common.CSRFCheck()
+
     #Get the topic id and check if the user even has access to that topic.
     sql="SELECT topics.id FROM topics LEFT JOIN threads ON threads.topic_id=topics.id LEFT JOIN replies ON replies.thread_id=threads.id WHERE threads.id=:id"
     topic_id=db.session.execute(sql, {"id":id}).fetchone()[0] 
@@ -79,6 +81,8 @@ def deleteReply(id):
     if common.notLoggedIn():
         return redirect("/")
     
+    common.CSRFCheck()
+    
 
     if common.getAuthLevel()==0: #Check if the user can delete the reply
         sql="SELECT poster_id FROM replies WHERE id=:reply_id"
@@ -125,6 +129,8 @@ def replyEditForm(id):
 def editReply(id):
     if common.notLoggedIn():
         return redirect("/")
+    
+    common.CSRFCheck()
     
     if common.getAuthLevel()==0: #Check if the user can delete the reply
         sql="SELECT poster_id FROM replies WHERE id=:reply_id"
