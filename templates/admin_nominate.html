@@ -23,6 +23,7 @@
     <input type="radio" name="nominate_type" value="moderator" checked> Moderaattori
     <input type="radio" name="nominate_type" value="admin"> Ylläpitäjä
 
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
     <button type="submit" class="adminButton"> Ylennä käyttäjä</button>
   </form> 
 

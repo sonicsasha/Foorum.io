@@ -41,6 +41,9 @@ def signupForm():
 
 
 def signup():
+    common.CSRFCheck()
+
+
     username=request.form["username"]
     password=request.form["password"]
     messages=[]
