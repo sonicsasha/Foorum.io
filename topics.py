@@ -1,8 +1,8 @@
 from urllib import request
 from flask import Flask
-from flask import render_template, request, session, redirect
+from flask import render_template, request, session, redirect, abort
 from flask_sqlalchemy import SQLAlchemy
-from os import access, getenv
+from os import getenv
 from werkzeug.security import check_password_hash, generate_password_hash
 import common
 
@@ -38,12 +38,12 @@ def threads(id):
 
     is_hidden = db.session.execute("SELECT is_hidden FROM topics WHERE id=:id", {"id":id}).fetchone()
     if not is_hidden: #Check if the topic even exists.
-        return("Aihetta ei löytynyt. Yritä uudelleen!")
+        abort(404,"Aihetta ei löytynyt. Yritä uudelleen!")
     
     if is_hidden[0]==True and common.getAuthLevel()==0:
         has_access=db.session.execute("SELECT topic_id FROM topicsAccess WHERE topic_id=:id AND user_id=:user_id", {"id":id, "user_id":common.getUserId()}).fetchone()
         if not has_access: #If the topic is private, then check that the user has access to the topic.
-            return ("Sinulla ei ole pääsyä tähän aiheeseen. Mene pois! >:(")
+            abort(403,"Sinulla ei ole pääsyä tähän aiheeseen. Mene pois! >:(")
     
     sql="SELECT T.id, U.username, U.auth_level, T.thread_header, T.thread_desc, T.sent_at, T.edited_at, MAX(R.sent_at), COUNT(R.sent_at) FROM threads T LEFT JOIN users U ON U.id=T.poster_id LEFT JOIN replies R ON R.thread_id=T.id WHERE T.topic_id=:topic_id GROUP BY T.id, U.username, U.auth_level ORDER BY T.sent_at DESC"
     threads=db.session.execute(sql, {"topic_id":id})
@@ -55,10 +55,13 @@ def editTopicForm(id):
 
 
     if common.getAuthLevel()<=1:
-        return ("You don't have the necessary permissions to perform this task.")
+        abort(403,"Sinulla ei ole tarvittavia oikeuksia.")
 
     sql="SELECT topic_name, topic_desc, is_hidden FROM topics WHERE id=:id"
     topic=db.session.execute(sql, {"id":id}).fetchone()
+
+    if not topic:
+        abort(404,"Aihetta ei löytynyt!")
 
     access=""
     sql="SELECT U.username FROM users U LEFT JOIN topicsAccess TA ON U.id=TA.user_id WHERE TA.topic_id=:id"
@@ -80,7 +83,7 @@ def editTopicSubmit(id):
     if common.notLoggedIn():
         return redirect("/")
     elif common.getAuthLevel()<2:
-        return ("You don't have the rights to perform this task!")
+        abort(403,"Sinulla ei ole tarvittavia oikeuksia tätä varten!")
     
     common.CSRFCheck()
 
@@ -133,7 +136,7 @@ def newTopicForm():
 
 
     if common.getAuthLevel()<=1:
-        return ("You don't have the necessary permissions to perform this task.")
+        abort(403,"Sinulla ei ole tarvittavia oikeuksia tätä varten.")
     
     return render_template("topic_editor.html", title="Luo uusi aihe", submit="Luo aihe", action="/topic/new")
 

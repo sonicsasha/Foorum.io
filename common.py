@@ -60,26 +60,26 @@ def checkThreadEditPerm(id):
     sql="SELECT thread_header, thread_desc, poster_id FROM threads WHERE id=:id"
     thread=db.session.execute(sql, {"id":id}).fetchone()
     if not thread:
-        return("Thread not found!")
+        abort(404, "Viestiketjua ei löytynyt!")
 
     elif thread["poster_id"]!=getUserId() and getAuthLevel()==0:
-        return ("You don't have permission to perform this action.")
+        abort(403, "Sinulla ei ole tarvittavia oikeuksia tähän!")
 
 def checkTopicPerm(thread_id):
     try:
         sql="SELECT topics.id FROM topics LEFT JOIN threads ON threads.topic_id=topics.id WHERE threads.id=:id"
         topic_id=db.session.execute(sql, {"id":thread_id}).fetchone()[0] 
     except:
-        return "Viestiketjua ei löytynyt"
+        abort(404, "Aihetta ei löytynyt!")
 
     is_hidden = db.session.execute("SELECT is_hidden FROM topics WHERE id=:id", {"id":topic_id}).fetchone()
     if not is_hidden: #Check if the topic even exists.
-        return("Aihetta ei löytynyt. Yritä uudelleen!")
+        abort(404, "Aihetta ei löytynyt!")
     
     if is_hidden[0]==True and getAuthLevel()==0:
         has_access=db.session.execute("SELECT topic_id FROM topicsAccess WHERE topic_id=:id AND user_id=:user_id", {"id":topic_id, "user_id":getUserId()}).fetchone()
         if not has_access: #If the topic is private, then check that the user has access to the topic.
-            return ("Sinulla ei ole pääsyä tähän aiheeseen. Mene pois! >:(")
+            abort(403, "Sinulla ei ole oikeuksia tähän toimintoon!")
 
 def CSRFCheck():
     if session["csrf_token"] != request.form["csrf_token"]:

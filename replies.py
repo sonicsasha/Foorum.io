@@ -1,6 +1,6 @@
 from urllib import request
 from flask import Flask
-from flask import render_template, request, session, redirect
+from flask import render_template, request, session, redirect, abort
 from flask_sqlalchemy import SQLAlchemy
 from os import access, getenv
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 
 def newReplyForm(id):
     if common.notLoggedIn():
-        return ("/")
+        return redirect("/")
      
 
     check=common.checkTopicPerm(id)
@@ -67,13 +67,13 @@ def deleteReplyConfirm(id):
         poster_id=db.session.execute(sql, {"reply_id":id}).fetchone()
 
         if common.getUserId()!=poster_id[0]:
-            return ("Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
+            abort(403,"Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
 
     sql="SELECT U.username, U.auth_level, R.id, R.message, R.sent_at, R.edited_at, R.thread_id FROM replies R LEFT JOIN users U ON U.id=R.poster_id WHERE R.id=:id"
     reply=db.session.execute(sql, {"id":id}).fetchone()
 
     if not reply:
-        return ("Vastausta jota halusit muokata ei löydy.")
+        abort(404,"Vastausta jota halusit muokata ei löydy.")
 
     return render_template("reply_delete.html", reply=reply)
 
@@ -88,14 +88,14 @@ def deleteReply(id):
         sql="SELECT poster_id FROM replies WHERE id=:reply_id"
         poster_id=db.session.execute(sql, {"reply_id":id}).fetchone()
         if not poster_id:
-            return ("Vastausta jota halusit muokata ei löydy.")
+            abort(404,"Vastausta jota halusit muokata ei löydy.")
 
         if common.getUserId()!=poster_id[0]:
-            return ("Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
+            abort(403,"Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
     
     thread_id=db.session.execute("SELECT thread_id FROM replies WHERE id=:id", {"id":id}).fetchone()
     if not thread_id:
-        return ("Vastausta jota halusit muokata ei löydy")
+        abort(404,"Vastausta jota halusit muokata ei löydy")
 
     sql="DELETE FROM replies WHERE id=:id"
     db.session.execute(sql, {"id":id})
@@ -111,10 +111,10 @@ def replyEditForm(id):
         sql="SELECT poster_id FROM replies WHERE id=:reply_id"
         poster_id=db.session.execute(sql, {"reply_id":id}).fetchone()
         if not poster_id:
-            return ("Vastausta jota halusit muokata ei löydy.")
+            abort(404,"Vastausta jota halusit muokata ei löydy.")
 
         if common.getUserId()!=poster_id[0]:
-            return ("Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
+            abort(403,"Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
     
     sql="SELECT T.thread_header, R.message FROM replies R LEFT JOIN threads T ON R.thread_id = T.id WHERE R.id = :id"
     reply=db.session.execute(sql, {"id":id}).fetchone()
@@ -136,10 +136,10 @@ def editReply(id):
         sql="SELECT poster_id FROM replies WHERE id=:reply_id"
         poster_id=db.session.execute(sql, {"reply_id":id}).fetchone()
         if not poster_id:
-            return ("Vastausta jota halusit muokata ei löydy.")
+            abort(404, "Vastausta jota halusit muokata ei löydy.")
 
         if common.getUserId()!=poster_id[0]:
-            return ("Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
+            abort(403,"Sinulla ei ole tarvittavia oikeuksia tähän operaatioon.")
     
     sql="SELECT R.thread_id, T.thread_header, R.message FROM replies R LEFT JOIN threads T ON R.thread_id = T.id WHERE R.id = :id"
     reply=db.session.execute(sql, {"id":id}).fetchone()

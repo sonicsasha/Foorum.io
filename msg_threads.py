@@ -1,6 +1,6 @@
 from urllib import request
 from flask import Flask
-from flask import render_template, request, session, redirect
+from flask import render_template, request, session, redirect, abort
 from flask_sqlalchemy import SQLAlchemy
 from os import access, getenv
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -62,7 +62,7 @@ def showThread(id):
     sql="SELECT Th.id, Th.thread_header, Th.thread_desc, Top.topic_name, Th.sent_at, Th.edited_at, U.username, U.auth_level FROM threads Th LEFT JOIN topics Top ON Th.topic_id=Top.id LEFT JOIN users U ON U.id=Th.poster_id WHERE Th.id=:id"
     thread_info=db.session.execute(sql, {"id":id}).fetchone()
     if not thread_info:
-        return ("Viestiketjua ei löytynyt:(")
+        abort(403, "Viestiketjua ei löytynyt!") #Thread not found
     
     sql="SELECT U.username, U.auth_level, R.id, R.message, R.sent_at, R.edited_at FROM replies R LEFT JOIN users U ON U.id=R.poster_id WHERE thread_id=:thread_id ORDER BY R.sent_at"
     replies=db.session.execute(sql, {"thread_id":id})
