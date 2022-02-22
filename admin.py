@@ -38,6 +38,8 @@ def nominate():
     if common.getAuthLevel()<2:
         abort(404)
     
+    common.CSRFCheck()
+
     if request.form["nominate_type"]=="moderator":
         db.session.execute("UPDATE users SET auth_level=1 WHERE username=:username", {"username":request.form["user"]})
         db.session.commit()
@@ -55,7 +57,7 @@ def banForm():
     if common.getAuthLevel()<2:
         abort(404)
     
-    sql="SELECT U.username FROM users U LEFT JOIN bans B ON B.user_id=U.id WHERE B.user_id IS NULL"
+    sql="SELECT U.username FROM users U LEFT JOIN bans B ON B.user_id=U.id WHERE B.user_id IS NULL AND U.auth_level=0"
     users=db.session.execute(sql).fetchall()
 
     sql="SELECT U.username FROM users U LEFT JOIN bans B ON B.user_id=U.id WHERE B.user_id=U.id"
@@ -71,12 +73,17 @@ def banUser():
     if common.getAuthLevel()<2:
         abort(404)
     
-    sql="SELECT id FROM users WHERE username=:username"
+    common.CSRFCheck()
+
+    sql="SELECT id, auth_level FROM users WHERE username=:username"
     user_id=db.session.execute(sql, {"username":request.form["ban_user"]}).fetchone()
     reason=request.form["ban_reason"]
 
     if not user_id:
         return render_template("admin_ban.html", messages=["Käyttäjää ei löytynyt. Yritä uudelleen!"])
+    
+    if user_id["auth_level"]>=1:
+        return render_template("admin_ban.html", messages=["Käyttäjälle on myönnetty etuoikeuksia, ja sen takia käyttäjää ei pystytä asettamaan kieltoon."])
 
     try:
         db.session.execute("INSERT INTO bans VALUES (:user_id, :reason)", {"user_id":user_id[0], "reason":reason})
@@ -94,6 +101,8 @@ def unbanUser():
     if common.getAuthLevel()<2:
         abort(404)
     
+    common.CSRFCheck()
+
     sql="SELECT id FROM users WHERE username=:username"
     user_id=db.session.execute(sql, {"username":request.form["unban_user"]}).fetchone()
 
