@@ -101,10 +101,12 @@ def deleteThread(id):
     if check!=None:
         return check
     
-    sql="SELECT id, poster_id, thread_header FROM threads WHERE id=:id"
+    sql="SELECT id, poster_id, thread_header, topic_id FROM threads WHERE id=:id"
     thread=db.session.execute(sql, {"id":id}).fetchone()
 
-    #TODO: delete all replies in the thread
+    sql="DELETE FROM replies WHERE thread_id=:id"
+    db.session.execute(sql, {"id":id})
+    db.session.commit()
 
     sql="DELETE FROM threads WHERE id=:id"
     db.session.execute(sql, {"id":id})
