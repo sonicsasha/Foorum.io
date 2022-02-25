@@ -57,7 +57,7 @@
 }
 
 .topic:hover {
-    background-color: #8aa0aa;
+    background-color: #a6c1ce;
 }
 
 .threadList {
@@ -67,7 +67,7 @@
     width: auto;
     margin-top:  50px;
     margin-bottom: 50px;
-    background-color: #6d8bc2;
+    background-color: #6aa6c9;
     border-radius: 3px;
     border-style: solid;
     border-width: 2px;
@@ -78,7 +78,7 @@
 }
 
 .threadList:hover{
-    background-color: #53688f;
+    background-color: #5b8fad;
 }
 
 .thread {
@@ -88,7 +88,7 @@
     width: auto;
     margin-top:  50px;
     margin-bottom: 50px;
-    background-color: #6d99c2;
+    background-color: #6aa6c9;;
     border-radius: 3px;
     border-style: solid;
     border-width: 3px;
@@ -122,7 +122,7 @@
     margin-top: 50px;
     margin-left: 35vw;
     margin-right: 35vw;
-    background-color: #80bedb;
+    background-color: #8acdec;
     font-size: 1.3em;
     margin-bottom: 20px;
     border-radius: 15px;
@@ -130,7 +130,7 @@
 }
 
 .newButton:hover {
-    background-color: #5c899e;
+    background-color: #75aec9;
 }
 
 .newThreadButton {
@@ -140,7 +140,7 @@
     margin-top: 50px;
     margin-left: 35vw;
     margin-right: 35vw;
-    background-color: #6d8bc2;
+    background-color: #6aa6c9;
     font-size: 1.3em;
     margin-bottom: 20px;
     border-radius: 15px;
@@ -148,7 +148,7 @@
 }
 
 .newThreadButton:hover{
-    background-color: #53688f
+    background-color: #5b8fad;
 }
 
 .editButton {
@@ -207,11 +207,7 @@
 }
 
 .adminButton:hover {
-    background-color: rgb(219, 219, 89);
-}
-
-.newButton:hover {
-    background-color: #5c899e;
+    background-color: rgb(223, 223, 56);
 }
 
 
