@@ -1,15 +1,5 @@
-from urllib import request
-from flask import Flask
-from flask import render_template, request, session, redirect, abort
-from flask_sqlalchemy import SQLAlchemy
-from os import access, getenv
-from werkzeug.security import check_password_hash, generate_password_hash
-
-app = Flask(__name__)
-app.secret_key = getenv("SECRET_KEY")
-
-app.config["SQLALCHEMY_DATABASE_URI"]=getenv("DATABASE_URL")
-db = SQLAlchemy(app)
+from flask import request, session, redirect, abort
+from app import db
 
 def notLoggedIn():
     try:

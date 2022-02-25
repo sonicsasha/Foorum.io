@@ -1,16 +1,9 @@
-from flask import Flask
 from flask import render_template, request, session, redirect
-from flask_sqlalchemy import SQLAlchemy
-from os import access, getenv
 from werkzeug.security import check_password_hash, generate_password_hash
 import common
 import secrets
+from app import db
 
-app = Flask(__name__)
-app.secret_key = getenv("SECRET_KEY")
-
-app.config["SQLALCHEMY_DATABASE_URI"]=getenv("DATABASE_URL")
-db = SQLAlchemy(app)
 
 def loginForm():
     session["csrf_token"] = secrets.token_hex(16) #Generate the CSRF-token when the login screen is rendered, since this step cannot be skipped.
